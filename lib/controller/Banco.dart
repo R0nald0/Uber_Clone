@@ -2,14 +2,13 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:uber/model/Usuario.dart';
 import '../Rotas.dart';
 
 class Banco{
    static var auth = FirebaseAuth.instance;
-  static var db   = FirebaseFirestore.instance;
+   static var db   = FirebaseFirestore.instance;
 
    salvarUserbd(Usuario usuario)async{
      await db.collection("usuario")

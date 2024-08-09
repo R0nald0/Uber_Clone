@@ -92,7 +92,6 @@ class ViewCorridaState extends State<ViewCorrida> {
               target:LatLng(position.latitude,position.longitude)
               ,zoom:18
           );
-
           localMotorista = position;
            _addMarcador(position, 'motorista', 'Meu local');
           _moverCamera(_cameraPositionViagem);
@@ -289,7 +288,7 @@ class ViewCorridaState extends State<ViewCorrida> {
                  padding: EdgeInsets.only(left: 60,right: 60),
                    child: ElevatedButton(
                      style: ElevatedButton.styleFrom(
-                         primary: _corPadrao,
+                         backgroundColor: _corPadrao,
                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                        textStyle: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
                        elevation: 5,

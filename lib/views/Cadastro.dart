@@ -7,15 +7,17 @@ import 'package:uber/controller/Banco.dart';
 import 'package:uber/model/Usuario.dart';
 
 class Cadastro extends StatefulWidget{
+  const Cadastro({super.key});
+
   @override
   State<StatefulWidget> createState() => CadastroState();
 
 }
 
 class CadastroState extends State<Cadastro>{
- TextEditingController _controllerNome  =  TextEditingController();
- TextEditingController _controllerEmail = TextEditingController();
- TextEditingController _controllerSenha =  TextEditingController();
+ final TextEditingController _controllerNome  =  TextEditingController();
+ final TextEditingController _controllerEmail = TextEditingController();
+ final TextEditingController _controllerSenha =  TextEditingController();
  bool _tipoUsuario = false;
  String erroMensagem = "";
 
@@ -23,10 +25,10 @@ class CadastroState extends State<Cadastro>{
   Widget build(BuildContext context) {
    return Scaffold(
      appBar: AppBar(
-       title: Text("Cadastro"),
+       title: const Text("Cadastro"),
      ),
       body: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child:Center(
            child: SingleChildScrollView(
              child: Column( crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -35,16 +37,16 @@ class CadastroState extends State<Cadastro>{
 
                  ElevatedButton(
                    style: ElevatedButton.styleFrom(
-                       primary: Colors.blue[200],
-                     padding: EdgeInsets.fromLTRB(32, 16, 32, 16),
-                     textStyle: TextStyle(fontSize: 18,),
+                       backgroundColor: Colors.blue[200],
+                     padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+                     textStyle: const TextStyle(fontSize: 18,),
                      shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                      elevation: 1
                    ),
                      onPressed: (){
                           _validarCampos();
                      },
-                     child: Text("Cadastrar")
+                     child: const Text("Cadastrar")
                  )
                ],
              ),
@@ -55,81 +57,79 @@ class CadastroState extends State<Cadastro>{
    );
   }
   _camposCadastro(){
-     return Container(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-          children:<Widget> [
-            TextField(
-              controller: _controllerNome,
-              keyboardType: TextInputType.name,
-              decoration: InputDecoration(
-                contentPadding: EdgeInsets.fromLTRB(32, 18, 32, 18),
-                filled: true,
-                fillColor: Colors.white,
-                hintText: "Nome......",
-
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(2),
-                ),
-                label:Text("Nome.....",style:TextStyle(fontSize: 20),),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: 13,bottom: 13),
-              child: TextField(
-                controller: _controllerEmail,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.fromLTRB(32, 18, 32, 18),
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: "SeuEmail@.com......",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                  label:Text("Email....",style:TextStyle(fontSize: 20),),
-                ),
-              ),
-
-            ),
-
-            TextField(
-              controller: _controllerSenha,
-              keyboardType: TextInputType.text,
-              obscureText: true,
-              decoration: InputDecoration(
-                contentPadding: EdgeInsets.fromLTRB(32, 18, 32, 18),
-                filled: true,
-                fillColor: Colors.white,
-                hintText: "Senha......",
-                focusColor: Colors.black,
-                hoverColor: Colors.black,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(2),
-                ),
-                label:Text("Senha....",style:TextStyle(fontSize: 20),),
-              ),
-            ),
-            Padding(
-                padding:EdgeInsets.only(top: 10,bottom: 20),
-                child: Row(
-                  children: <Widget>[
-                    Text("Passageiro"),
-                    Switch(
-                        value: _tipoUsuario,
-                        onChanged: (bool valor){
-                          setState(() {
-                            _tipoUsuario = valor;
-                          });
-                        }
-                    ),
-                    Text("Motorista")
-                  ],
-                )
-            ),
-
-
-          ],
-        ),
+     return Column(crossAxisAlignment: CrossAxisAlignment.stretch,
+       children:<Widget> [
+         TextField(
+           controller: _controllerNome,
+           keyboardType: TextInputType.name,
+           decoration: InputDecoration(
+             contentPadding: const EdgeInsets.fromLTRB(32, 18, 32, 18),
+             filled: true,
+             fillColor: Colors.white,
+             hintText: "Nome......",
+     
+             border: OutlineInputBorder(
+               borderRadius: BorderRadius.circular(2),
+             ),
+             label:const Text("Nome.....",style:TextStyle(fontSize: 20),),
+           ),
+         ),
+         Padding(
+           padding: const EdgeInsets.only(top: 13,bottom: 13),
+           child: TextField(
+             controller: _controllerEmail,
+             keyboardType: TextInputType.emailAddress,
+             decoration: InputDecoration(
+               contentPadding: const EdgeInsets.fromLTRB(32, 18, 32, 18),
+               filled: true,
+               fillColor: Colors.white,
+               hintText: "SeuEmail@.com......",
+               border: OutlineInputBorder(
+                 borderRadius: BorderRadius.circular(2),
+               ),
+               label:const Text("Email....",style:TextStyle(fontSize: 20),),
+             ),
+           ),
+     
+         ),
+     
+         TextField(
+           controller: _controllerSenha,
+           keyboardType: TextInputType.text,
+           obscureText: true,
+           decoration: InputDecoration(
+             contentPadding: const EdgeInsets.fromLTRB(32, 18, 32, 18),
+             filled: true,
+             fillColor: Colors.white,
+             hintText: "Senha......",
+             focusColor: Colors.black,
+             hoverColor: Colors.black,
+             border: OutlineInputBorder(
+               borderRadius: BorderRadius.circular(2),
+             ),
+             label:const Text("Senha....",style:TextStyle(fontSize: 20),),
+           ),
+         ),
+         Padding(
+             padding:const EdgeInsets.only(top: 10,bottom: 20),
+             child: Row(
+               children: <Widget>[
+                 const Text("Passageiro"),
+                 Switch(
+                     value: _tipoUsuario,
+                     onChanged: (bool valor){
+                       setState(() {
+                         _tipoUsuario = valor;
+                       });
+                     }
+                 ),
+                 const Text("Motorista")
+               ],
+             )
+         ),
+     
+     
+       ],
      );
   }
 
@@ -147,6 +147,9 @@ class CadastroState extends State<Cadastro>{
              user.nome=nome;
              user.email=email;
              user.tipoUsuario = user.verificaTipoUsuario(_tipoUsuario);
+             user.latitude = 0;
+             user.longitude = 0;
+             user.idUsuario = null;
 
              cadastrarUsuario(user);
 
@@ -168,7 +171,7 @@ class CadastroState extends State<Cadastro>{
   }
 
   cadastrarUsuario(Usuario user) async{
-     await user.cadastrarUsuario( context);
+     await user.cadastrarUsuario( context,user);
   }
 
   _snackBar(String erro){

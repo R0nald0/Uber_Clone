@@ -4,11 +4,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:uber/Rotas.dart';
 import 'package:uber/SplashScreen.dart';
-import 'package:uber/views/Home.dart';
 
-void main(){
+void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  Firebase.initializeApp();
+  await   Firebase.initializeApp();
+
 
   final ThemeData temaPadrao = ThemeData(
     colorScheme: ColorScheme.fromSwatch().copyWith(
@@ -24,7 +24,7 @@ void main(){
   runApp(MaterialApp(
     title: "Uber",
     theme: Platform.isIOS == true? temaIos :temaPadrao,
-    home: SplashScreen(),
+    home: const SplashScreen(),
 
     initialRoute: Rotas.ROUTE_SPLASHSCREEN,
     onGenerateRoute:Rotas.getRotas,

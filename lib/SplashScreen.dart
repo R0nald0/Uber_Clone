@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,6 +8,8 @@ import 'package:uber/model/Usuario.dart';
 import 'package:uber/util/UsuarioFirebase.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   State<StatefulWidget> createState() => SplashScreenState();
 }
@@ -23,8 +24,8 @@ class SplashScreenState extends State<SplashScreen> {
     }else{
       Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_HOME, (route) => false);
     }
-
   }
+  
   recuperarDadosUsuario(String id) async {
 
     DocumentSnapshot snapshot =  await Banco.db.collection("usuario").doc(id).get();
@@ -36,26 +37,29 @@ class SplashScreenState extends State<SplashScreen> {
       usuario.tipoUsuario == "passageiro"
           ?Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_VIEWPASSAGEIRO, (route) => false)
           :Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_VIEWMOTORISTA, (route) => false);
+    }else{
+     Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_HOME, (route) => false);
+
     }
 
   }
 
-
   @override
-  void didChangeDependencies() {
+  void initState() {
+  
+    super.initState();
 
-    super.didChangeDependencies();
-    Timer(Duration(seconds: 5), () {
-      verificarUsuarioOn();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+        verificarUsuarioOn();
+     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-          padding: EdgeInsets.all(60),
-          decoration: BoxDecoration(
+          padding: const EdgeInsets.all(60),
+          decoration: const BoxDecoration(
             image: DecorationImage(
                 image: AssetImage("images/fundo.png"), fit: BoxFit.cover),
           ),
@@ -63,10 +67,10 @@ class SplashScreenState extends State<SplashScreen> {
             child: Column(
               children: <Widget>[
                 Padding(
-                  padding: EdgeInsets.only(top: 100, bottom: 50),
+                  padding: const EdgeInsets.only(top: 100, bottom: 50),
                   child: Image.asset("images/logo.png"),
                 ),
-                LinearProgressIndicator(
+                const LinearProgressIndicator(
                   color: Colors.blue,
                   minHeight: 2,
                 ),

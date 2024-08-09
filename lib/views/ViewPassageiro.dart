@@ -691,7 +691,7 @@ class ViewPassageiroState extends State<ViewPassageiro> {
         padding: EdgeInsets.only(left: 60, right: 60),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-              primary: _corBotaoPadrao,
+              backgroundColor: _corBotaoPadrao,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
               padding: EdgeInsets.fromLTRB(32, 16, 32, 16),
@@ -784,8 +784,6 @@ class ViewPassageiroState extends State<ViewPassageiro> {
 
   @override
   void dispose() {
-
-
     super.dispose();
      streamSubscription.cancel();
   }

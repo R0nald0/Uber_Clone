@@ -22,25 +22,21 @@ class Rotas{
     switch(settings.name){
 
       case ROUTE_SPLASHSCREEN:
-        return MaterialPageRoute(builder: (_)=> SplashScreen());
+        return MaterialPageRoute(builder: (_)=> const SplashScreen());
 
       case ROUTE_HOME:
-        return MaterialPageRoute(builder: (_)=>Home());
-        break;
+        return MaterialPageRoute(builder: (_)=>const Home());
+        
 
       case ROUTE_CADASTRO:
         return MaterialPageRoute(builder: (_)=>Cadastro());
-        break;
       case ROUTE_VIEWPASSAGEIRO:
         return MaterialPageRoute(builder: (_)=>ViewPassageiro());
-        break;
       case ROUTE_VIEWMOTORISTA:
         return MaterialPageRoute(builder: (_)=>ViewMotorista());
-        break;
 
         case ROUTE_VIEWCORRIDA:
         return MaterialPageRoute(builder: (_)=>ViewCorrida(args));
-        break;
       default :_erroRota;
     }
   }

@@ -5,7 +5,7 @@ import '../Rotas.dart';
 import '../controller/Banco.dart';
 
 class Usuario{
-  late String _idUsuario;
+  late String? _idUsuario;
   late String _email;
   late String _nome;
   late String _tipoUsuario;
@@ -21,41 +21,43 @@ class Usuario{
 
   Map<String,dynamic> toMap(){
     Map<String,dynamic> map={
-      'idUsuario' : this.idUsuario,
-      "nome" : this.nome,
-      "email":this.email,
-      "tipoUsuario":this._tipoUsuario,
+      'idUsuario' : idUsuario,
+      "nome" : nome,
+      "email":email,
+      "tipoUsuario":_tipoUsuario,
     };
     return map;
   }
 
   Map<String,dynamic> toMapUp(){
     Map<String,dynamic> map={
-      'idUsuario' : this.idUsuario,
-      "nome" : this.nome,
-      "email":this.email,
-      "tipoUsuario":this._tipoUsuario,
-      "latitude"   : this.latitude,
-      "longitude" : this.longitude
+      'idUsuario' : idUsuario,
+      "nome" : nome,
+      "email":email,
+      "tipoUsuario":_tipoUsuario,
+      "latitude"   : latitude,
+      "longitude" : longitude
     };
     return map;
   }
 
-  cadastrarUsuario(context) async{
-    await Banco.auth.createUserWithEmailAndPassword(
-        email: this.email,
-        password: this.senha
-    ).then(( dadosUser) async {
-
-      await Banco.db.collection("usuario").doc(dadosUser.user?.uid).set(this.toMap());
-
-     this.tipoUsuario == "passageiro"
+  cadastrarUsuario(context,user) async{
+  try {
+  final userCredencia =   await Banco.auth.createUserWithEmailAndPassword(
+        email: email,
+        password: senha
+    );
+    
+     if (userCredencia.user != null) {
+         await Banco.db.collection("usuario").doc(userCredencia.user!.uid).set(toMap());
+         tipoUsuario == "passageiro"
           ?Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_VIEWPASSAGEIRO, (route) => false)
           :Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_VIEWMOTORISTA, (route) => false);
-
-    }).catchError((erro){
-      print("Erro ao cadastrar" + erro.toString());
-    });
+      }   
+} on Exception catch (e,s) {
+     print('errr  $e');
+     print('stack  $s');
+}
   }
 
   String get senha => _senha;
@@ -82,9 +84,9 @@ class Usuario{
     _email = value;
   }
 
-  String get idUsuario => _idUsuario;
+  String get idUsuario => _idUsuario ??'';
 
-  set idUsuario(String value) {
+  set idUsuario(String? value) {
     _idUsuario = value;
   }
 

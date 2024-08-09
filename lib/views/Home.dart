@@ -1,13 +1,15 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+
 import 'package:uber/Rotas.dart';
 import 'package:uber/controller/Banco.dart';
 
 import '../model/Usuario.dart';
 
 class Home extends StatefulWidget{
+  const Home({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() =>HomeState();
   
@@ -16,8 +18,8 @@ class Home extends StatefulWidget{
 class HomeState extends State<Home>{
   //TODO VEIRIFICAR ERRO NO PROCESSO DE LOGIN EMAIL SEM EXCEPTION
 
-  TextEditingController _controllerEmail =TextEditingController();
-  TextEditingController _controllerSenha = TextEditingController();
+  final TextEditingController _controllerEmail =TextEditingController();
+  final TextEditingController _controllerSenha = TextEditingController();
   String erroMensagem= "";
 
   _validarCampos(){
@@ -31,7 +33,7 @@ class HomeState extends State<Home>{
         user.senha = senha;
         user.email=email;
 
-        logarUsuario(user);
+      //  logarUsuario(user);
 
 
       }else{
@@ -54,8 +56,8 @@ class HomeState extends State<Home>{
       return Scaffold(
 
         body:  Container(
-              padding: EdgeInsets.all(16),
-              decoration:BoxDecoration(
+              padding: const EdgeInsets.all(16),
+              decoration:const BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage("images/fundo.png")
                     ,fit: BoxFit.cover
@@ -65,7 +67,7 @@ class HomeState extends State<Home>{
                   child: SingleChildScrollView(
                     child: Column(
                       children: <Widget>[
-                        Padding(padding: EdgeInsets.only(top:50),
+                        Padding(padding: const EdgeInsets.only(top:50),
                           child:Image.asset("images/logo.png",height:200,width:200,),
                         ),
                         camposLoginTxtV(),
@@ -85,7 +87,7 @@ class HomeState extends State<Home>{
      child:Column(
        children: <Widget>[
          Padding(
-           padding:EdgeInsets.only(top: 20,bottom: 10),
+           padding:const EdgeInsets.only(top: 20,bottom: 10),
            child:
            TextField(
              keyboardType: TextInputType.emailAddress,
@@ -124,17 +126,15 @@ class HomeState extends State<Home>{
    );
   }
 
-
-
   campoBtns(){
     return Container(
           child: Column(crossAxisAlignment:CrossAxisAlignment.stretch,
             children: <Widget>[
               Padding(
-                padding: EdgeInsets.only(top: 20,bottom: 8),
+                padding: const EdgeInsets.only(top: 20,bottom: 8),
                 child: ElevatedButton(
                   style:ElevatedButton.styleFrom(
-                    primary: Colors.blue[200],
+                    backgroundColor: Colors.blue[200],
                     padding: EdgeInsets.fromLTRB(32,16, 32, 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                     textStyle: TextStyle(fontSize: 20),
@@ -142,14 +142,14 @@ class HomeState extends State<Home>{
                   onPressed: (){
                     _validarCampos();
                   },
-                  child: Text("Login"),
+                  child: const Text("Login"),
                 ),
               ),
               TextButton(
                   onPressed: (){
                     Navigator.pushNamed(context, Rotas.ROUTE_CADASTRO);
                   },
-                  child: Text("Nao tem conta, Cadastre-se!! ",
+                  child: const Text("Nao tem conta, Cadastre-se!! ",
                     style: TextStyle(
                         fontSize: 15,
                         color: Colors.white
