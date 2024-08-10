@@ -47,7 +47,7 @@ class HomeState extends State<Home>{
   }
   logarUsuario( Usuario usuario) async{
     Banco bd = Banco();
-    bd.LogarUsuario(usuario, context);
+    bd.logarUsuario(usuario, context);
 
   }
 

@@ -1,18 +1,18 @@
 
 import 'dart:io';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'package:flutter/material.dart';
 import 'package:uber/Rotas.dart';
 import 'package:uber/SplashScreen.dart';
+import 'package:uber/app/core/app_config_initialization.dart';
 
 void main() async{
-  WidgetsFlutterBinding.ensureInitialized();
-  await   Firebase.initializeApp();
+     await AppConfigInitialization().loadConfig();
 
 
   final ThemeData temaPadrao = ThemeData(
     colorScheme: ColorScheme.fromSwatch().copyWith(
-      primary: Color(0xff37474f)
+      primary: const Color(0xff37474f)
     )
   );
 

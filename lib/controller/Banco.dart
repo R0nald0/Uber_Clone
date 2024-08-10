@@ -16,7 +16,7 @@ class Banco{
          .set(usuario.toMap());
   }
 
-  LogarUsuario(Usuario usuario,context)async{
+  logarUsuario(Usuario usuario,context)async{
 
     await auth.signInWithEmailAndPassword(
         email: usuario.email,

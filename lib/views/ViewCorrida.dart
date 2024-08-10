@@ -227,7 +227,10 @@ class ViewCorridaState extends State<ViewCorrida> {
     double latDestinoFinal  =  snapshot['motorista']['latitude'];
     double longDestinoFinal =  snapshot['motorista']['longitude'];
 
-    Position positioFinal = Position(longitude:longDestinoFinal, latitude: latDestinoFinal,
+    Position positioFinal = Position(
+        longitude:longDestinoFinal, latitude: latDestinoFinal,
+        altitudeAccuracy: 0,
+        headingAccuracy: 0,
         timestamp: DateTime.now(),
         accuracy:  0,
         altitude: 18,
@@ -335,6 +338,8 @@ class ViewCorridaState extends State<ViewCorrida> {
 
    Position localOrigem = Position(longitude:mLong, latitude: mLat,
         timestamp: DateTime.now(),
+        altitudeAccuracy: 0,
+        headingAccuracy: 0,
         accuracy:  0,
         altitude: 18,
         heading: 0,
@@ -342,6 +347,8 @@ class ViewCorridaState extends State<ViewCorrida> {
         speedAccuracy: 0
     ) ;
    Position _localDestino = Position(longitude:destionoLong, latitude: destinoLat,
+     altitudeAccuracy: 0,
+     headingAccuracy: 0,
         timestamp: DateTime.now(),
         accuracy:  0,
         altitude: 18,
@@ -374,7 +381,7 @@ class ViewCorridaState extends State<ViewCorrida> {
 
   gerarMarcador(Position position,BitmapDescriptor icon,String titulo,String id){
     Marker marker = Marker(
-        markerId:   MarkerId("${id}"),
+        markerId:   MarkerId(id),
       position:     LatLng(position.latitude,position.longitude),
       infoWindow:   InfoWindow(title: titulo),
       icon: icon

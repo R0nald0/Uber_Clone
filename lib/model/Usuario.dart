@@ -49,6 +49,8 @@ class Usuario{
     );
     
      if (userCredencia.user != null) {
+     
+        _idUsuario = userCredencia.user?.uid;
          await Banco.db.collection("usuario").doc(userCredencia.user!.uid).set(toMap());
          tipoUsuario == "passageiro"
           ?Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_VIEWPASSAGEIRO, (route) => false)
