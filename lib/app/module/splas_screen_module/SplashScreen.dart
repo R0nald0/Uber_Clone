@@ -22,7 +22,7 @@ class SplashScreenState extends State<SplashScreen> {
     if (user != null) {
        recuperarDadosUsuario(user.uid);
     }else{
-      Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_HOME, (route) => false);
+      Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_LOGIN, (route) => false);
     }
   }
   
@@ -38,7 +38,7 @@ class SplashScreenState extends State<SplashScreen> {
           ?Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_VIEWPASSAGEIRO, (route) => false)
           :Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_VIEWMOTORISTA, (route) => false);
     }else{
-     Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_HOME, (route) => false);
+     Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_LOGIN, (route) => false);
 
     }
 

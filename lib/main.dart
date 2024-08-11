@@ -1,33 +1,24 @@
 
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:uber/Rotas.dart';
-import 'package:uber/SplashScreen.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:uber/app/main_module.dart';
 import 'package:uber/app/core/app_config_initialization.dart';
+import 'package:uber/app/main_widget.dart';
 
 void main() async{
      await AppConfigInitialization().loadConfig();
 
-
-  final ThemeData temaPadrao = ThemeData(
-    colorScheme: ColorScheme.fromSwatch().copyWith(
-      primary: const Color(0xff37474f)
-    )
+  runApp(
+    ModularApp(module: MainModule(), child: const MainWidget())
   );
+}
 
-
-  final ThemeData temaIos = ThemeData(
-      colorScheme:ColorScheme.fromSwatch());
-
-
-  runApp(MaterialApp(
+/* MaterialApp(
     title: "Uber",
     theme: Platform.isIOS == true? temaIos :temaPadrao,
     home: const SplashScreen(),
-
     initialRoute: Rotas.ROUTE_SPLASHSCREEN,
     onGenerateRoute:Rotas.getRotas,
 
-  ));
-}
+  ) */
