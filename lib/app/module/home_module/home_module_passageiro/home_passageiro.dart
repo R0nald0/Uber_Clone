@@ -16,14 +16,14 @@ import 'package:uber/model/Usuario.dart';
 import 'package:uber/util/Status.dart';
 import 'package:uber/util/UsuarioFirebase.dart';
 
-class ViewPassageiro extends StatefulWidget {
-  const ViewPassageiro({super.key});
+class HomePassageiro extends StatefulWidget {
+  const HomePassageiro({super.key});
 
   @override
-  State<StatefulWidget> createState() => ViewPassageiroState();
+  State<StatefulWidget> createState() => HomePassageiroState();
 }
 
-class ViewPassageiroState extends State<ViewPassageiro> {
+class HomePassageiroState extends State<HomePassageiro> {
   final Completer<GoogleMapController> _controller = Completer();
   CameraPosition positionCan = const CameraPosition(target: LatLng(-13.008864, -38.528722), zoom: 17);
   final Set<Marker> _marcador = {};
@@ -80,7 +80,7 @@ class ViewPassageiroState extends State<ViewPassageiro> {
   _deslogarUsuario() {
     Banco.auth.signOut();
     Navigator.pushNamedAndRemoveUntil(
-        context, Rotas.ROUTE_HOME, (route) => false);
+        context, Rotas.ROUTE_LOGIN, (route) => false);
   }
 
   _exibirPosicoesMarcadores(Marcador marcadorOrigem, Marcador marcadorDestino) {

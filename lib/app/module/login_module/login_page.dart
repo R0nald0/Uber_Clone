@@ -5,17 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:uber/Rotas.dart';
 import 'package:uber/controller/Banco.dart';
 
-import '../model/Usuario.dart';
+import '../../../model/Usuario.dart';
 
-class Home extends StatefulWidget{
-  const Home({super.key});
+class LoginPage extends StatefulWidget{
+  const LoginPage({super.key});
 
   @override
-  State<StatefulWidget> createState() =>HomeState();
+  State<StatefulWidget> createState() =>LoginPageState();
   
 }
 
-class HomeState extends State<Home>{
+class LoginPageState extends State<LoginPage>{
 
   final TextEditingController _controllerEmail =TextEditingController();
   final TextEditingController _controllerSenha = TextEditingController();
@@ -143,7 +143,7 @@ class HomeState extends State<Home>{
         ),
         TextButton(
             onPressed: (){
-              Navigator.pushNamed(context, Rotas.ROUTE_CADASTRO);
+              Navigator.pushNamed(context, Rotas.ROUTE_REGISTER);
             },
             child: const Text("Nao tem conta, Cadastre-se!! ",
               style: TextStyle(

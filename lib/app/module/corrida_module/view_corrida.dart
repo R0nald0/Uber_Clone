@@ -16,7 +16,7 @@ import 'package:uber/model/Requisicao.dart';
 import 'package:uber/model/Usuario.dart';
 import 'package:uber/util/Status.dart';
 import 'package:uber/util/UsuarioFirebase.dart';
-import '../Rotas.dart';
+import '../../../Rotas.dart';
 
 
 

@@ -6,15 +6,15 @@ import 'package:uber/Rotas.dart';
 import 'package:uber/controller/Banco.dart';
 import 'package:uber/model/Usuario.dart';
 
-class Cadastro extends StatefulWidget{
-  const Cadastro({super.key});
+class RegisterPage extends StatefulWidget{
+  const RegisterPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => CadastroState();
+  State<StatefulWidget> createState() => RegisterPageState();
 
 }
 
-class CadastroState extends State<Cadastro>{
+class RegisterPageState extends State<RegisterPage>{
  final TextEditingController _controllerNome  =  TextEditingController();
  final TextEditingController _controllerEmail = TextEditingController();
  final TextEditingController _controllerSenha =  TextEditingController();
