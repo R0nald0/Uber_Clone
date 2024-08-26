@@ -11,11 +11,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
 import 'package:uber/controller/Banco.dart';
-import 'package:uber/model/Marcador.dart';
-import 'package:uber/model/Requisicao.dart';
-import 'package:uber/model/Usuario.dart';
-import 'package:uber/util/Status.dart';
-import 'package:uber/util/UsuarioFirebase.dart';
+import 'package:uber/app/model/Marcador.dart';
+import 'package:uber/app/model/Requisicao.dart';
+import 'package:uber/app/model/Usuario.dart';
+import 'package:uber/app/util/Status.dart';
+import 'package:uber/app/util/UsuarioFirebase.dart';
 import '../../../Rotas.dart';
 
 
@@ -23,7 +23,7 @@ import '../../../Rotas.dart';
 class ViewCorrida extends StatefulWidget{
   late String idRequisicao;
 
-  ViewCorrida(this.idRequisicao);
+  ViewCorrida(this.idRequisicao, {super.key});
 
   @override
   State<StatefulWidget> createState() => ViewCorridaState();
@@ -31,7 +31,7 @@ class ViewCorrida extends StatefulWidget{
 
 class ViewCorridaState extends State<ViewCorrida> {
 
-  Completer<GoogleMapController> _comtroler = Completer();
+  final Completer<GoogleMapController> _comtroler = Completer();
   CameraPosition _cameraPositionViagem =CameraPosition(
       target:LatLng(-13.001478,-38.499390),
   );
@@ -394,8 +394,8 @@ class ViewCorridaState extends State<ViewCorrida> {
   _aceitarCorrida() async{
 
      Usuario usuarioMotorista = await UsuarioFirebase.recuperarDadosPassageiro();
-     usuarioMotorista.latitude =localMotorista.latitude;
-     usuarioMotorista.longitude =localMotorista.longitude;
+     usuarioMotorista.copyWith(latitude: localMotorista.latitude);
+     usuarioMotorista.copyWith(longitude: localMotorista.longitude);
 
      Banco.db.collection("requisicao")
          .doc(widget.idRequisicao).update({

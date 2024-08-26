@@ -2,9 +2,8 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:uber/model/Requisicao.dart';
-import 'package:uber/util/Status.dart';
-import 'package:uber/util/UsuarioFirebase.dart';
+import 'package:uber/app/util/Status.dart';
+import 'package:uber/app/util/UsuarioFirebase.dart';
 import '../../../../Rotas.dart';
 import '../../../../controller/Banco.dart';
 

@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:uber/app/main_module.dart';
-import 'package:uber/app/core/app_config_initialization.dart';
+import 'package:uber/app/module/core/app_config_initialization.dart';
 import 'package:uber/app/main_widget.dart';
 
 void main() async{

@@ -1,10 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:uber/Rotas.dart';
-import 'package:uber/controller/Banco.dart';
-import 'package:uber/model/Usuario.dart';
+import 'package:uber/app/model/Usuario.dart';
 
 class RegisterPage extends StatefulWidget{
   const RegisterPage({super.key});
@@ -142,14 +137,16 @@ class RegisterPageState extends State<RegisterPage>{
        if(email.contains("@") && email.isNotEmpty){
           if(senha.length > 5  && senha.isNotEmpty){
 
-             Usuario user = Usuario();
-             user.senha = senha;
-             user.nome=nome;
-             user.email=email;
-             user.tipoUsuario = user.verificaTipoUsuario(_tipoUsuario);
-             user.latitude = 0;
-             user.longitude = 0;
-             user.idUsuario = null;
+             Usuario user = Usuario(
+              email: email,
+               nome: nome, 
+               tipoUsuario: verificaTipoUsuario(_tipoUsuario), 
+               senha: senha, 
+               latitude: 0, 
+               longitude: 0,
+
+             );
+          
 
              cadastrarUsuario(user);
 
@@ -168,6 +165,9 @@ class RegisterPageState extends State<RegisterPage>{
        _snackBar(erroMensagem);
     }
 
+  }
+  String verificaTipoUsuario(bool usuarioTipo){
+     return usuarioTipo? "motorista" : "passageiro";
   }
 
   cadastrarUsuario(Usuario user) async{

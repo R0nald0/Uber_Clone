@@ -3,7 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:uber/model/Usuario.dart';
+import 'package:uber/app/model/Usuario.dart';
 import '../Rotas.dart';
 
 class Banco{
@@ -16,18 +16,17 @@ class Banco{
          .set(usuario.toMap());
   }
 
-  logarUsuario(Usuario usuario,context)async{
+  logarUsuario(String email,String senha,context)async{
 
     await auth.signInWithEmailAndPassword(
-        email: usuario.email,
-        password: usuario.senha
+        email: email,
+        password: senha
     ).then((user) async{
 
-         Usuario usuario = Usuario();
          DocumentSnapshot snapshot =  await db.collection("usuario").doc(user.user?.uid).get();
-         usuario.tipoUsuario = snapshot.get("tipoUsuario");
+         final tipoUsuario = snapshot.get("tipoUsuario");
 
-        if(usuario.tipoUsuario =="passageiro"){
+        if(tipoUsuario =="passageiro"){
           Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_VIEWPASSAGEIRO, (route) => false);
         }else{
           Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_VIEWMOTORISTA, (route) => false);

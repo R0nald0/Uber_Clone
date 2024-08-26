@@ -3,28 +3,32 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/intl.dart';
 import 'package:uber/Rotas.dart';
+import 'package:uber/app/module/core/authentication_controller.dart';
+import 'package:uber/app/module/home_module/home_module_passageiro/home_passageiro_controller.dart';
 import 'package:uber/controller/Banco.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:uber/model/Destino.dart';
-import 'package:uber/model/Marcador.dart';
-import 'package:uber/model/Requisicao.dart';
-import 'package:uber/model/Usuario.dart';
-import 'package:uber/util/Status.dart';
-import 'package:uber/util/UsuarioFirebase.dart';
+import 'package:uber/app/model/Destino.dart';
+import 'package:uber/app/model/Marcador.dart';
+import 'package:uber/app/model/Requisicao.dart';
+import 'package:uber/app/model/Usuario.dart';
+import 'package:uber/app/util/Status.dart';
+import 'package:uber/app/util/UsuarioFirebase.dart';
 
-class HomePassageiro extends StatefulWidget {
-  const HomePassageiro({super.key});
+class HomePassageiroPage extends StatefulWidget {
+  const HomePassageiroPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => HomePassageiroState();
+  State<StatefulWidget> createState() => HomePassageiroPageState();
 }
 
-class HomePassageiroState extends State<HomePassageiro> {
+class HomePassageiroPageState extends State<HomePassageiroPage> {
   final Completer<GoogleMapController> _controller = Completer();
+
   CameraPosition positionCan = const CameraPosition(target: LatLng(-13.008864, -38.528722), zoom: 17);
   final Set<Marker> _marcador = {};
   late BitmapDescriptor imgPassageiro;
@@ -62,17 +66,18 @@ class HomePassageiroState extends State<HomePassageiro> {
   }
 
   _moverCameraBound(LatLngBounds latLngBounds) async {
-    GoogleMapController _controllerBouds = await _controller.future;
-    _controllerBouds
+    GoogleMapController controllerBouds = await _controller.future;
+    controllerBouds
         .animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 100));
   }
 
-  _escolhaMenu(String escolha) {
+  _escolhaMenu(String escolha,AuthenticationController controller) {
     switch (escolha) {
       case "Configurações":
         break;
       case "Deslogar":
-        _deslogarUsuario();
+         controller.logout();
+       // _deslogarUsuario();
         break;
     }
   }
@@ -414,6 +419,8 @@ class HomePassageiroState extends State<HomePassageiro> {
 
   @override
   Widget build(BuildContext context) {
+     final authController = Modular.get<AuthenticationController>();
+
     return Scaffold(
         appBar: AppBar(
           title: const Text("Passgeiro"),
@@ -424,7 +431,9 @@ class HomePassageiroState extends State<HomePassageiro> {
                 },
                 icon: const Icon(Icons.my_location)),
             PopupMenuButton<String>(
-                onSelected: _escolhaMenu,
+                onSelected: (String escolhaMenu){
+                     _escolhaMenu(escolhaMenu,authController);
+                },
                 itemBuilder: (context) => listMenu.map((String item) {
                       return PopupMenuItem(
                         value: item,
@@ -600,8 +609,8 @@ class HomePassageiroState extends State<HomePassageiro> {
   _salvarRequisicao(Destino destino,String valorFinalCorrida) async {
     Usuario usuario = await UsuarioFirebase.recuperarDadosPassageiro();
 
-    usuario.latitude = _localPassageiros.latitude;
-    usuario.longitude = _localPassageiros.longitude;
+    usuario.copyWith(latitude: _localPassageiros.latitude);
+    usuario.copyWith(longitude: _localPassageiros.longitude);
 
     Requisicao requisicao = Requisicao();
     requisicao.destino = destino;
@@ -766,7 +775,7 @@ class HomePassageiroState extends State<HomePassageiro> {
 
   Future<String> _calcularValorVieagem(double latOrigem,longOrigem,latDestino,longDestino)  async{
 
-    double distanciaEntreOrigemDestino = await Geolocator.distanceBetween(
+    double distanciaEntreOrigemDestino =  Geolocator.distanceBetween(
         latOrigem,
         longOrigem,
         latDestino,
@@ -781,9 +790,9 @@ class HomePassageiroState extends State<HomePassageiro> {
      return valorCobrado;
   }
 
-  String formatarValor(double){
+  String formatarValor( double unFormatedValue){
    var valor  = NumberFormat('##,##0.00','pt-BR');
-    String total =  valor.format(double);
+    String total =  valor.format(unFormatedValue);
    return total;
   }
 
