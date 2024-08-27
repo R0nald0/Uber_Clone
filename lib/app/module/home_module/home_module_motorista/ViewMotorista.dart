@@ -2,11 +2,10 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:uber/model/Requisicao.dart';
-import 'package:uber/util/Status.dart';
-import 'package:uber/util/UsuarioFirebase.dart';
-import '../Rotas.dart';
-import '../controller/Banco.dart';
+import 'package:uber/app/util/Status.dart';
+import 'package:uber/app/util/UsuarioFirebase.dart';
+import '../../../../Rotas.dart';
+import '../../../../controller/Banco.dart';
 
 class ViewMotorista extends StatefulWidget{
   @override
@@ -32,7 +31,7 @@ class ViewMotoristaState extends State<ViewMotorista>{
   }
   deslogarUsuario(){
     Banco.auth.signOut();
-    Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_HOME, (route) => false);
+    Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_LOGIN, (route) => false);
   }
 
   StreamController<QuerySnapshot<Object?>> getRequisicoes(){
