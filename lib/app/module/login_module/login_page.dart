@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:mobx/mobx.dart';
 import 'package:uber/Rotas.dart';
 import 'package:uber/app/module/login_module/login_controller.dart';
 import 'package:uber/core/mixins/dialog_loader/dialog_loader.dart';
-import 'package:uber/controller/Banco.dart';
+import 'package:uber/core/widgets/uber_text_fields/uber_text_field_widget.dart';
+import 'package:validatorless/validatorless.dart';
 
 class LoginPage extends StatefulWidget {
   final LoginController loginController;
@@ -14,66 +16,39 @@ class LoginPage extends StatefulWidget {
 }
 
 class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
-  final TextEditingController _controllerEmail = TextEditingController();
-  final TextEditingController _controllerSenha = TextEditingController();
+  final _controllerEmail = TextEditingController();
+  final _controllerSenha = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   late ReactionDisposer errorReactionDispose;
 
   String erroMensagem = "";
 
-  _validarCampos(LoginController loginController) async {
-    String email = _controllerEmail.text;
-    String senha = _controllerSenha.text;
-
-    if (email.contains("@") && email.isNotEmpty) {
-      if (senha.length > 5 && senha.isNotEmpty) {
-         
-        await loginController.login(email, senha);
-    
-       
-      } else {
-        erroMensagem =
-            "Erro ao Cadastrar Usuario! Defina uma senha com mais que 4 caracteres";
-          callSnackBar(erroMensagem);
-      }
-    } else {
-      erroMensagem = "Defina um Email válido";
-      callSnackBar(erroMensagem);
-    }
-  }
-
   initReaction() {
-    
-    errorReactionDispose = reaction<String?>(
-        (_) =>widget.loginController.errorMensage , (erro) {
-              if (erro != null && erro.isNotEmpty) {
-                 callSnackBar(erro);
-              }
-        });
+    errorReactionDispose =
+        reaction<String?>((_) => widget.loginController.errorMensage, (erro) {
+      if (erro != null && erro.isNotEmpty) {
+        callSnackBar(erro);
+      }
+    });
   }
 
-  logarUsuario(String email, String senha) async {
-    Banco bd = Banco();
-    bd.logarUsuario(email, senha, context);
-  }
   @override
   void initState() {
     initReaction();
-   
     super.initState();
   }
 
   @override
   void dispose() {
     errorReactionDispose();
-     _controllerEmail.dispose();
+    _controllerEmail.dispose();
     _controllerSenha.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-  
     return Scaffold(
       body: Container(
           padding: const EdgeInsets.all(16),
@@ -85,16 +60,14 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 50),
-                    child: Image.asset(
-                      "images/logo.png",
-                      height: 200,
-                      width: 200,
-                    ),
+                   const CircleAvatar(
+                    radius: 120,
+                    backgroundColor: null,
+                    backgroundImage: AssetImage('images/logo.png'),
                   ),
-                  camposLoginTxtV(),
-                  campoBtns(widget.loginController),
+                 
+                  camposLoginTxtV(_formKey),
+                  campoBtns(widget.loginController, _formKey),
                 ],
               ),
             ),
@@ -102,44 +75,40 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
     );
   }
 
-  camposLoginTxtV() {
-    return Column(
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(top: 20, bottom: 10),
-          child: TextField(
-            keyboardType: TextInputType.emailAddress,
-            controller: _controllerEmail,
-            decoration: InputDecoration(
-                hintText: "Email....",
-                filled: true,
-                fillColor: Colors.white,
-                prefixIcon: const Icon(Icons.email_outlined),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                contentPadding: const EdgeInsets.fromLTRB(32, 16, 32, 16)),
-            style: const TextStyle(fontSize: 18),
+  camposLoginTxtV(GlobalKey<FormState> formState) {
+    return Form(
+      key: formState,
+      child: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(top: 20, bottom: 10),
+            child: UberTextFieldWidget(
+              controller: _controllerEmail,
+              prefixIcon: const Icon(Icons.email_outlined),
+              hintText: 'Email...',
+              validator: Validatorless.multiple([
+                Validatorless.required("Campo requerido"),
+                Validatorless.email('E-mail inválido')
+                ,
+              ]),
+            ),
           ),
-        ),
-        TextField(
-          controller: _controllerSenha,
-          keyboardType: TextInputType.text,
-          obscureText: true,
-          decoration: InputDecoration(
-              hintText: "Senha....",
-              filled: true,
-              fillColor: Colors.white,
-              prefixIcon: const Icon(Icons.password_rounded),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-              contentPadding: const EdgeInsets.fromLTRB(32, 16, 32, 16)),
-          style: const TextStyle(fontSize: 18),
-        ),
-      ],
+          UberTextFieldWidget(
+            controller: _controllerSenha,
+            obscureText: true,
+            prefixIcon: const Icon(Icons.key),
+            hintText: 'Senha...',
+            validator: Validatorless.multiple([
+              Validatorless.required("Campo requerido"),
+              Validatorless.min(5, 'Senha deve conter no mínimo 5 caracteres'),
+            ]),
+          ),
+        ],
+      ),
     );
   }
 
-  campoBtns(LoginController loginController) {
+  campoBtns(LoginController loginController, GlobalKey<FormState> formState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -156,7 +125,12 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
             onPressed: () async {
               FocusNode().requestFocus();
               showLoaderDialog();
-              await _validarCampos(loginController);
+              final isValid = formState.currentState?.validate() ?? false;
+              if (isValid) {
+                 final email = _controllerEmail.text;
+                 final ssenha = _controllerSenha.text;
+                 await loginController.login(email,ssenha );
+              }
               hideLoader();
             },
             child: const Text("Login"),
@@ -164,7 +138,7 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
         ),
         TextButton(
             onPressed: () {
-              Navigator.pushNamed(context, Rotas.ROUTE_REGISTER);
+              Modular.to.pushNamed(Rotas.ROUTE_REGISTER,);
             },
             child: const Text(
               "Nao tem conta, Cadastre-se!! ",

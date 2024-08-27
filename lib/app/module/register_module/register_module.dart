@@ -27,7 +27,7 @@ class RegisterModule extends Module {
   void routes(RouteManager r) {
   
     super.routes(r);
-    r.child(Modular.initialRoute, child: (_) => const RegisterPage());
+    r.child(Modular.initialRoute, child: (_) => const RegisterPage(),transition: TransitionType.rightToLeft);
    
   }
 }
