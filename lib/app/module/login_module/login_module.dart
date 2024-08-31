@@ -12,7 +12,9 @@ class LoginModule extends Module {
   void binds(Injector i) {
     super.binds(i);
     i.addLazySingleton<IUserRepository>(() => UserRepositoryImpl(
-        auth: Modular.get<FirebaseAuth>(), log: Modular.get()));
+        auth: Modular.get<FirebaseAuth>(),
+        log: Modular.get(),
+        database: Modular.get()));
     i.addLazySingleton<UserService>(
         () => UserServiceImpl(userRepository: Modular.get<IUserRepository>()));
     i.addLazySingleton(() => LoginController(serviceUser: Modular.get()));
@@ -21,6 +23,9 @@ class LoginModule extends Module {
   @override
   void routes(RouteManager r) {
     super.routes(r);
-    r.child(Modular.initialRoute, child: (_) =>  LoginPage(loginController:Modular.get<LoginController>(),));
+    r.child(Modular.initialRoute,
+        child: (_) => LoginPage(
+              loginController: Modular.get<LoginController>(),
+            ));
   }
 }

@@ -1,25 +1,62 @@
 import 'package:flutter/material.dart';
+import 'package:mobx/mobx.dart';
 import 'package:uber/app/model/Usuario.dart';
+import 'package:uber/app/module/register_module/register_controller.dart';
+import 'package:uber/core/mixins/dialog_loader/dialog_loader.dart';
+import 'package:uber/core/widgets/uber_text_fields/uber_text_field_widget.dart';
+import 'package:validatorless/validatorless.dart';
 
 class RegisterPage extends StatefulWidget{
-  const RegisterPage({super.key});
+  final RegisterController registerController;
+
+  const RegisterPage({super.key, required this.registerController});
 
   @override
   State<StatefulWidget> createState() => RegisterPageState();
 
 }
 
-class RegisterPageState extends State<RegisterPage>{
- final TextEditingController _controllerNome  =  TextEditingController();
- final TextEditingController _controllerEmail = TextEditingController();
- final TextEditingController _controllerSenha =  TextEditingController();
+class RegisterPageState extends State<RegisterPage> with DialogLoader{
+ final _controllerEmail = TextEditingController();
+ final _controllerNome  =  TextEditingController();
+ final _controllerSenha =  TextEditingController();
+ final _formKey = GlobalKey<FormState>();
+
+ late ReactionDisposer errorReactionDispose;
+
+
  bool _tipoUsuario = false;
  String erroMensagem = "";
+
+  @override
+  void initState() {
+     
+     initReaction();
+    super.initState();
+  }
+
+  initReaction(){
+    errorReactionDispose = reaction<String?>((_) =>widget.registerController.errorMessange, (erro){
+       if (erro != null && erro.isNotEmpty) {
+           callSnackBar(erro);
+       }
+     });
+  }
+
+  @override
+  void dispose() {
+     errorReactionDispose();
+    _controllerEmail.dispose();
+    _controllerNome.dispose();
+    _controllerSenha.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
    return Scaffold(
      appBar: AppBar(
+      
        title: const Text("Cadastro"),
      ),
       body: Container(
@@ -28,7 +65,9 @@ class RegisterPageState extends State<RegisterPage>{
            child: SingleChildScrollView(
              child: Column( crossAxisAlignment: CrossAxisAlignment.stretch,
                children: <Widget>[
-                  _camposCadastro(),
+                  _camposCadastro(_formKey),
+
+                 const SizedBox(height: 20),
 
                  ElevatedButton(
                    style: ElevatedButton.styleFrom(
@@ -38,8 +77,18 @@ class RegisterPageState extends State<RegisterPage>{
                      shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                      elevation: 1
                    ),
-                     onPressed: (){
-                          _validarCampos();
+                     onPressed: () async{
+                         FocusNode().unfocus();
+                        showLoaderDialog();
+                         final isValid = _formKey.currentState?.validate() ?? false; 
+                         if (isValid) {
+                             final name = _controllerNome.text;
+                             final email = _controllerEmail.text;
+                             final password = _controllerSenha.text;  
+                             await  widget.registerController.register(name, email, password);
+                             //_validarCampos();
+                         }
+                         hideLoader(); 
                      },
                      child: const Text("Cadastrar")
                  )
@@ -51,80 +100,73 @@ class RegisterPageState extends State<RegisterPage>{
 
    );
   }
-  _camposCadastro(){
-     return Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-       children:<Widget> [
-         TextField(
-           controller: _controllerNome,
-           keyboardType: TextInputType.name,
-           decoration: InputDecoration(
-             contentPadding: const EdgeInsets.fromLTRB(32, 18, 32, 18),
-             filled: true,
-             fillColor: Colors.white,
-             hintText: "Nome......",
-     
-             border: OutlineInputBorder(
-               borderRadius: BorderRadius.circular(2),
-             ),
-             label:const Text("Nome.....",style:TextStyle(fontSize: 20),),
+  _camposCadastro(GlobalKey<FormState> formKey){
+     return Form(
+      key:formKey ,
+       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
+         children:<Widget> [
+           UberTextFieldWidget(
+            controller: _controllerNome,
+            inputType: TextInputType.name,
+            label:"Nome......" ,
+            prefixIcon: const Icon(Icons.person),
+            validator: Validatorless.multiple([
+              Validatorless.required('Nome requerido'),
+              Validatorless.min(6, "seu nome precisar ter pelo menos 6 letras")
+            ]),
+            ),
+       
+            
+           
+           Padding(
+             padding: const EdgeInsets.only(top: 13,bottom: 13),
+             child: UberTextFieldWidget(
+            controller: _controllerEmail,
+            inputType: TextInputType.emailAddress,
+            label:"Email......" ,
+            hintText: "SeuEmail@.com......",
+            prefixIcon: const Icon(Icons.email),
+            validator: Validatorless.multiple([
+              Validatorless.required("Email requerido"),
+              Validatorless.email("Defina um Email válido")
+            ]),
+            ),
+       
            ),
-         ),
-         Padding(
-           padding: const EdgeInsets.only(top: 13,bottom: 13),
-           child: TextField(
-             controller: _controllerEmail,
-             keyboardType: TextInputType.emailAddress,
-             decoration: InputDecoration(
-               contentPadding: const EdgeInsets.fromLTRB(32, 18, 32, 18),
-               filled: true,
-               fillColor: Colors.white,
-               hintText: "SeuEmail@.com......",
-               border: OutlineInputBorder(
-                 borderRadius: BorderRadius.circular(2),
-               ),
-               label:const Text("Email....",style:TextStyle(fontSize: 20),),
-             ),
-           ),
-     
-         ),
-     
-         TextField(
-           controller: _controllerSenha,
-           keyboardType: TextInputType.text,
-           obscureText: true,
-           decoration: InputDecoration(
-             contentPadding: const EdgeInsets.fromLTRB(32, 18, 32, 18),
-             filled: true,
-             fillColor: Colors.white,
-             hintText: "Senha......",
-             focusColor: Colors.black,
-             hoverColor: Colors.black,
-             border: OutlineInputBorder(
-               borderRadius: BorderRadius.circular(2),
-             ),
-             label:const Text("Senha....",style:TextStyle(fontSize: 20),),
-           ),
-         ),
-         Padding(
-             padding:const EdgeInsets.only(top: 10,bottom: 20),
-             child: Row(
-               children: <Widget>[
-                 const Text("Passageiro"),
-                 Switch(
-                     value: _tipoUsuario,
-                     onChanged: (bool valor){
-                       setState(() {
-                         _tipoUsuario = valor;
-                       });
-                     }
-                 ),
-                 const Text("Motorista")
-               ],
-             )
-         ),
-     
-     
-       ],
+       
+            UberTextFieldWidget(
+            controller: _controllerSenha,
+            inputType: TextInputType.text,
+            label:"Senha" ,
+            obscureText: true,
+            prefixIcon: const Icon(Icons.key),
+            validator: Validatorless.multiple([
+              Validatorless.required("Email requerido"),
+              Validatorless.min(5, "Defina uma senha com mais que 5 caracteres")
+            ]),
+            ),
+           
+          //  Padding(
+          //      padding:const EdgeInsets.only(top: 10,bottom: 20),
+          //      child: Row(
+          //        children: <Widget>[
+          //          const Text("Passageiro"),
+          //          Switch(
+          //              value: _tipoUsuario,
+          //              onChanged: (bool valor){
+          //                setState(() {
+          //                  _tipoUsuario = valor;
+          //                });
+          //              }
+          //          ),
+          //          const Text("Motorista")
+          //        ],
+          //      )
+          //  ),
+       
+         
+         ],
+       ),
      );
   }
 

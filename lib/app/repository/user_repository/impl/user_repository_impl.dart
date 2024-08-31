@@ -1,15 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uber/app/repository/user_repository/i_user_repository.dart';
-
+import 'package:uber/core/constants/uber_clone_contstants.dart';
 import 'package:uber/core/execptions/user_exception.dart';
 import 'package:uber/core/logger/app_uber_log.dart';
 
 class UserRepositoryImpl implements IUserRepository {
   final FirebaseAuth _auth;
+  final FirebaseFirestore _database;
   final IAppUberLog _log;
 
-  UserRepositoryImpl({required FirebaseAuth auth, required IAppUberLog log})
+  UserRepositoryImpl({required FirebaseAuth auth,required FirebaseFirestore database, required IAppUberLog log})
       : _auth = auth,
+        _database = database,
         _log = log;
 
   @override
@@ -44,11 +47,15 @@ class UserRepositoryImpl implements IUserRepository {
   }
 
   @override
-  Future<User?> register(String name, String email, String password) async {
+  Future<User?> register(String name, String email, String password,String tipoUsuario) async {
     try {
       final userCredencial = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      return userCredencial.user;
+         if (userCredencial.user != null) {
+             saveUserOnDatabase(name, userCredencial.user!.uid, email, password, tipoUsuario);
+             return userCredencial.user;
+         }
+        throw UserException(message: "Erro ao salvar dados do usuario");
     } on FirebaseAuthException catch (e, s) {
       switch (e.code) {
         case 'email-already-in-use':
@@ -68,6 +75,22 @@ class UserRepositoryImpl implements IUserRepository {
       }
     
     }
+    return null;
+  }
+
+  Future<void> saveUserOnDatabase(String name,String idUsuario ,String email, String password,String tipoUsuario) async{
+       try {
+          await _database
+          .collection(UberCloneContstants.USUARiO_DATABASE_NAME)
+          .doc(idUsuario).set({
+            'email': email,
+            'idUsuario': idUsuario,
+            'nome' : name,
+            'tipoPassageiro' :tipoUsuario
+          });
+       }  on UserException catch (e,s) {
+           throwErrorState("erro ao salvar dados", e, s);
+       }
   }
 
   void throwErrorState(String message, dynamic e, StackTrace s) {

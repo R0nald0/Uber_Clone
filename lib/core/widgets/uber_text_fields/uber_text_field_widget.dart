@@ -6,6 +6,7 @@ class UberTextFieldWidget extends StatelessWidget {
   final FormFieldValidator<String>? validator;
   final bool obscureText;
   final String? hintText;
+  final String? label; 
   final TextInputType? inputType;
   final Icon? prefixIcon;
   final ValueNotifier<bool> _obscureTextVN;
@@ -15,6 +16,7 @@ class UberTextFieldWidget extends StatelessWidget {
     required this.controller,
     this.obscureText = false,
     this.hintText,
+    this.label,
     this.validator,
     this.prefixIcon,
     this.inputType,
@@ -36,6 +38,7 @@ class UberTextFieldWidget extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: Colors.amber,
               ),
+              label:label != null ? Text(label!,style:TextStyle(fontSize: 20),) : null,
               suffixIcon: obscureText
                         ? IconButton(
                             onPressed: () {
