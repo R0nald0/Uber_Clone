@@ -41,10 +41,10 @@ class Usuario {
   
   factory Usuario.fromFirestore( DocumentSnapshot snapshot ){
      return  Usuario(
-        idUsuario: snapshot['idUsuario'] ?? '',
-        email: snapshot["email"] ?? '', 
-        nome:  snapshot["nome"] ?? '', 
-        tipoUsuario: snapshot["tipoUsuario"] ?? '', 
+        idUsuario: snapshot.get('idUsuario') ?? '',
+        email: snapshot.get('email')?? '', 
+        nome:  snapshot.get('nome') ?? '', 
+        tipoUsuario: snapshot.get('tipoUsuario') ?? '', 
         senha: '', 
         latitude: 0, 
         longitude: 0

@@ -23,7 +23,7 @@ class AuthRepositoryImpl implements IAuthRepository {
         _log = logger;
 
   @override
-  Future<User?> verifyStateUserLogged() async {
+  Future<User?> verifyStateUserLogged() async { 
     final userCompleter = Completer<User?>();
     _auth.authStateChanges().listen((user) {
       if (user != null) {
@@ -40,7 +40,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<Usuario> getDataUserOn(String idUser) async {
     try {
       DocumentSnapshot snapshot =
-          await _db.collection(UberCloneContstants.USUARiO_DATABASE_NAME)
+          await _db.collection(UberCloneConstants.USUARiO_DATABASE_NAME)
           .doc(idUser)
           .get();
           return  Usuario.fromFirestore(snapshot); 

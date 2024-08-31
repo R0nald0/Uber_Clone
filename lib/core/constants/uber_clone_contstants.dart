@@ -1,7 +1,7 @@
 
-class UberCloneContstants {
+class UberCloneConstants {
   
-  UberCloneContstants._();
+  UberCloneConstants._();
   // ignore: constant_identifier_names
   static const USUARiO_DATABASE_NAME = 'usuario';
   // ignore: constant_identifier_names

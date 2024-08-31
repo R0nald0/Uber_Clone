@@ -22,7 +22,7 @@ abstract class RegisterControllerBase with Store {
   Future<void> register(String name,String email,String password) async{
      try {
         _errorMessange =null;
-       final user  = await _userService.register(name, email, password,UberCloneContstants.TIPO_USUARIO_PASSAGEIRO);
+       final user  = await _userService.register(name, email, password,UberCloneConstants.TIPO_USUARIO_PASSAGEIRO);
        if (user != null) {
          Modular.to.navigate(Rotas.ROUTE_VIEWPASSAGEIRO);
          return;

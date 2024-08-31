@@ -81,12 +81,12 @@ class UserRepositoryImpl implements IUserRepository {
   Future<void> saveUserOnDatabase(String name,String idUsuario ,String email, String password,String tipoUsuario) async{
        try {
           await _database
-          .collection(UberCloneContstants.USUARiO_DATABASE_NAME)
+          .collection(UberCloneConstants.USUARiO_DATABASE_NAME)
           .doc(idUsuario).set({
             'email': email,
             'idUsuario': idUsuario,
             'nome' : name,
-            'tipoPassageiro' :tipoUsuario
+            'tipoUsuario' :tipoUsuario
           });
        }  on UserException catch (e,s) {
            throwErrorState("erro ao salvar dados", e, s);

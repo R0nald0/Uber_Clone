@@ -23,7 +23,8 @@ class Banco{
         password: senha
     ).then((user) async{
 
-         DocumentSnapshot snapshot =  await db.collection("usuario").doc(user.user?.uid).get();
+         DocumentSnapshot snapshot =  await db.collection("usuario")
+         .doc(user.user?.uid).get();
          final tipoUsuario = snapshot.get("tipoUsuario");
 
         if(tipoUsuario =="passageiro"){

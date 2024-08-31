@@ -30,7 +30,7 @@ abstract class AuthenticationControllerBase with Store {
     try {
       final user = await _authRepository.verifyStateUserLogged();
       if (user != null) {
-       _usuario = await _authRepository.getDataUserOn(user.uid);
+         _usuario = await _authRepository.getDataUserOn(user.uid);
       }else{
          logout();
       }
@@ -44,7 +44,7 @@ abstract class AuthenticationControllerBase with Store {
        if (kDebugMode) {
          print(s);
        }
-      _errorMessage ="Erro ao buscar dados do ususario";
+      _errorMessage ="Erro ao buscar dados do usuario";
     }
   }
 
