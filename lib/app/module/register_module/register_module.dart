@@ -11,10 +11,11 @@ class RegisterModule extends Module {
   void binds(Injector i) {
     super.binds(i);
     i.addLazySingleton<IUserRepository>(() => UserRepositoryImpl(
-        auth: Modular.get(), log: Modular.get(), database: Modular.get()));
+      localStoreage: Modular.get(),
+       log: Modular.get()));
     i.addLazySingleton<UserService>(
         () => UserServiceImpl(userRepository: Modular.get()));
-    i.addLazySingleton(() => RegisterController(userService: Modular.get()));
+    i.addLazySingleton(() => RegisterController(userService: Modular.get(),authRepository: Modular.get()));
   }
 
   @override

@@ -4,29 +4,35 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:intl/intl.dart';
-import 'package:uber/Rotas.dart';
-import 'package:uber/app/module/core/authentication_controller.dart';
-import 'package:uber/app/module/home_module/home_module_passageiro/home_passageiro_controller.dart';
-import 'package:uber/controller/Banco.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
+import 'package:mobx/mobx.dart';
+import 'package:uber/Rotas.dart';
 import 'package:uber/app/model/Destino.dart';
 import 'package:uber/app/model/Marcador.dart';
 import 'package:uber/app/model/Requisicao.dart';
 import 'package:uber/app/model/Usuario.dart';
+import 'package:uber/app/module/core/authentication_controller.dart';
+import 'package:uber/app/module/home_module/home_module_passageiro/home_passageiro_controller.dart';
 import 'package:uber/app/util/Status.dart';
 import 'package:uber/app/util/UsuarioFirebase.dart';
+import 'package:uber/controller/Banco.dart';
+import 'package:uber/core/mixins/dialog_loader/dialog_loader.dart';
+
 
 class HomePassageiroPage extends StatefulWidget {
-  const HomePassageiroPage({super.key});
+   
+  final HomePassageiroController homePassageiroController;
+
+  const HomePassageiroPage({super.key,required this.homePassageiroController});
 
   @override
   State<StatefulWidget> createState() => HomePassageiroPageState();
 }
 
-class HomePassageiroPageState extends State<HomePassageiroPage> {
+class HomePassageiroPageState extends State<HomePassageiroPage> with DialogLoader {
   final Completer<GoogleMapController> _controller = Completer();
 
   CameraPosition positionCan = const CameraPosition(target: LatLng(-13.008864, -38.528722), zoom: 17);
@@ -71,7 +77,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage> {
         .animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 100));
   }
 
-  _escolhaMenu(String escolha,AuthenticationController controller) {
+  _escolhaMenu(String escolha,HomePassageiroController controller) {
     switch (escolha) {
       case "Configurações":
         break;
@@ -401,29 +407,47 @@ class HomePassageiroPageState extends State<HomePassageiroPage> {
   }
 
   _recuperarDadosPassageiro() async {
-    User? user = await UsuarioFirebase.getFirebaseUser();
+   /*  User? user = await UsuarioFirebase.getFirebaseUser();
     if (user != null) {
       idUser = user.uid.toString();
       _verificarRequisicaoAtiva();
-    }
-  }
+    } */
 
+    
+
+  }
+   initReaction(){
+       widget.homePassageiroController.getDataUSerOn();
+        reaction<Usuario?>((_) => widget.homePassageiroController.usuario, (usuario){
+           if (usuario != null) {
+               print("RECUPEROU DADOS ${usuario.nome}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+              idUser = usuario.idUsuario!;
+      _verificarRequisicaoAtiva();
+           }
+        });
+        reaction<String?>((_) => widget.homePassageiroController.errorMensager, (error){
+           if (error != null) {
+              
+           }
+        });
+   }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_){
        _recuperarDadosPassageiro();
+       initReaction();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-     final authController = Modular.get<AuthenticationController>();
+    
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Passgeiro"),
+          title:  Text("Passgeiro "),
           actions: <Widget>[
             IconButton(
                 onPressed: () {
@@ -432,7 +456,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage> {
                 icon: const Icon(Icons.my_location)),
             PopupMenuButton<String>(
                 onSelected: (String escolhaMenu){
-                     _escolhaMenu(escolhaMenu,authController);
+                     _escolhaMenu(escolhaMenu,widget.homePassageiroController);
                 },
                 itemBuilder: (context) => listMenu.map((String item) {
                       return PopupMenuItem(

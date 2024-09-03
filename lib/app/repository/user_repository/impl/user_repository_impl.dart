@@ -1,96 +1,76 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:uber/app/model/Usuario.dart';
 import 'package:uber/app/repository/user_repository/i_user_repository.dart';
 import 'package:uber/core/constants/uber_clone_contstants.dart';
 import 'package:uber/core/execptions/user_exception.dart';
+import 'package:uber/core/local_storage/local_storage.dart';
 import 'package:uber/core/logger/app_uber_log.dart';
 
 class UserRepositoryImpl implements IUserRepository {
-  final FirebaseAuth _auth;
-  final FirebaseFirestore _database;
+  final _database = FirebaseFirestore.instance;
+  final LocalStorage _localStorage;
   final IAppUberLog _log;
 
-  UserRepositoryImpl({required FirebaseAuth auth,required FirebaseFirestore database, required IAppUberLog log})
-      : _auth = auth,
-        _database = database,
+  UserRepositoryImpl(
+      {required LocalStorage localStoreage, required IAppUberLog log})
+      : _localStorage = localStoreage,
         _log = log;
 
-  @override
-  Future<User?> logar(String email, String password) async {
-    try {
-      final user = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
-      return user.user;
-    } on FirebaseAuthException catch (e, s) {
-      switch (e.code) {
-        case 'user-disabled':
-          throwErrorState('Email ja em uso,', e, s);
-        case 'wrong-password':
-          throwErrorState('Senha inválida,por favor,tente novamente', e, s);
-        case 'invalid-email':
-          throwErrorState('Email Inválido,por favor,insira um email válido', e, s);
-        case 'user-not-found':
-          throwErrorState('Usuario não encontrado...', e, s);
-        case 'invalid-credential:':
-          throwErrorState(
-              'email ou senha inválido,verifique susa credenciais', e, s);
-        case 'too-many-requests':
-          throwErrorState(
-              'Muitas tentativas,aguarde um momento e tente novamente', e, s);
-        case 'network-request-failed':
-          throwErrorState(
-              'Falha,ao conectear com o serviço,verifique sua conexão', e, s);
-       default: throwErrorState("Erro desconhecido entre em contato com o suporte", e, s);
-      }
-    } 
 
-  }
 
   @override
-  Future<User?> register(String name, String email, String password,String tipoUsuario) async {
+  Future<Usuario> getDataUserOn(String idUser) async {
     try {
-      final userCredencial = await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-         if (userCredencial.user != null) {
-             saveUserOnDatabase(name, userCredencial.user!.uid, email, password, tipoUsuario);
-             return userCredencial.user;
-         }
-        throw UserException(message: "Erro ao salvar dados do usuario");
-    } on FirebaseAuthException catch (e, s) {
-      switch (e.code) {
-        case 'email-already-in-use':
-          throwErrorState('Email ja em uso,', e, s);
-        case 'invalid-email':
-          throwErrorState('Email Inválido,', e, s);
-        case 'weak-password':
-          throwErrorState(
-              'Senha fraca, a senha deve conter no mínimo 5 caracteres', e, s);
-        case 'too-many-requests':
-          throwErrorState(
-              'Muitas tentativas,aguarde um momento e tente novamente', e, s);
-        case 'network-request-failed':
-          throwErrorState(
-              'Falha,ao conectear com o serviço,verifique sua conexão', e, s);
-       default: throwErrorState("Erro desconhecido entre em contato com o suporte", e, s);
+     final isUsedLocal = await _localStorage.containsKey(UberCloneConstants.KEY_PREFERENCE_USER);
+      if (isUsedLocal) {
+         final user = await _localStorage.read<String>(UberCloneConstants.KEY_PREFERENCE_USER); 
+         return  Usuario.fromJson(user!);
       }
-    
-    }
-    return null;
-  }
-
-  Future<void> saveUserOnDatabase(String name,String idUsuario ,String email, String password,String tipoUsuario) async{
-       try {
-          await _database
+      
+      DocumentSnapshot snapshot = await _database
           .collection(UberCloneConstants.USUARiO_DATABASE_NAME)
-          .doc(idUsuario).set({
-            'email': email,
-            'idUsuario': idUsuario,
-            'nome' : name,
-            'tipoUsuario' :tipoUsuario
-          });
-       }  on UserException catch (e,s) {
-           throwErrorState("erro ao salvar dados", e, s);
-       }
+          .doc(idUser)
+          .get();
+      final usuario = Usuario.fromFirestore(snapshot);
+      final retur = await _localStorage.write("USER", usuario.toJson());
+      _log.info('$retur');
+      return usuario;
+    } on DatabaseException catch (e, s) {
+      _log.erro("Erro ao salvar no sqlIte", e, s);
+      throw UserException(message: "Erro ao salvar");
+    } on Exception catch (e, s) {
+      _log.erro("erro ao buscas daddos do usuario", e, s);
+      throw UserException(message: "erro ao buscas daddos do usuario");
+    }
+  }
+
+  @override
+  Future<void> saveUserOnDatabase(String name, String idUsuario, String email,
+      String password, String tipoUsuario) async {
+    try {
+      await _database
+          .collection(UberCloneConstants.USUARiO_DATABASE_NAME)
+          .doc(idUsuario)
+          .set({
+        'email': email,
+        'idUsuario': idUsuario,
+        'nome': name,
+        'tipoUsuario': tipoUsuario
+      });
+      final usuario = Usuario(
+          email: email,
+          latitude: 0.0,
+          longitude: 0.0,
+          nome: name,
+          senha: '',
+          tipoUsuario: tipoUsuario,
+          idUsuario: idUsuario);
+      await _localStorage.write("USER", usuario.toJson());
+    } on UserException catch (e, s) {
+      throwErrorState("erro ao salvar dados", e, s);
+    }
   }
 
   void throwErrorState(String message, dynamic e, StackTrace s) {

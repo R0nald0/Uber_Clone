@@ -2,10 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:mobx/mobx.dart';
 import 'package:uber/Rotas.dart';
-import 'package:uber/app/model/Usuario.dart';
+import 'package:uber/app/repository/auth_repository/I_auth_repository.dart';
+import 'package:uber/core/constants/uber_clone_contstants.dart';
 import 'package:uber/core/execptions/auth_exception.dart';
 import 'package:uber/core/execptions/user_exception.dart';
-import 'package:uber/app/repository/auth_repository/I_auth_repository.dart';
+import 'package:uber/core/local_storage/local_storage.dart';
 
 part 'authentication_controller.g.dart';
 
@@ -14,13 +15,11 @@ class AuthenticationController = AuthenticationControllerBase
 
 abstract class AuthenticationControllerBase with Store {
   final IAuthRepository _authRepository;
+  final LocalStorage _local ;
 
   
-  AuthenticationControllerBase({required IAuthRepository authRepository})
-      : _authRepository = authRepository;
-
-  @readonly
-  Usuario? _usuario;
+  AuthenticationControllerBase({required IAuthRepository authRepository, required LocalStorage storage})
+      : _authRepository = authRepository,_local=storage;
 
   @readonly
   String? _errorMessage;
@@ -30,7 +29,10 @@ abstract class AuthenticationControllerBase with Store {
     try {
       final user = await _authRepository.verifyStateUserLogged();
       if (user != null) {
-         _usuario = await _authRepository.getDataUserOn(user.uid);
+         Modular.to.pushNamedAndRemoveUntil(
+             Rotas.ROUTE_VIEWPASSAGEIRO, (route) => false);
+         final userLocal = await _local.read<String>(UberCloneConstants.KEY_PREFERENCE_USER);
+         print('$userLocal !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
       }else{
          logout();
       }
@@ -49,7 +51,6 @@ abstract class AuthenticationControllerBase with Store {
   }
 
   Future<void> logout() async{
-     _usuario = Usuario.emptyUser();
      Modular.to.pushNamedAndRemoveUntil(Rotas.ROUTE_LOGIN,(_) => false,);
      _authRepository.logout();
      
