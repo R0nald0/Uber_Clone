@@ -1,9 +1,10 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:uber/app/model/Usuario.dart';
 
 abstract interface  class IAuthRepository {
   Future<User?> verifyStateUserLogged();
-  Future<Usuario> getDataUserOn(String idUser);
+  Future<User?> logar(String email, String password);
+  Future<User?> register(String name, String email, String password,String tipoUsuario);      
+  String? getIdCurrenteUserUser();
   void logout();
 }

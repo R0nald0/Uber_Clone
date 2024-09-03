@@ -21,9 +21,7 @@ class Rotas{
 
     switch(settings.name){
 
-  
-      case ROUTE_VIEWPASSAGEIRO:
-        return MaterialPageRoute(builder: (_)=>HomePassageiroPage());
+
       case ROUTE_VIEWMOTORISTA:
         return MaterialPageRoute(builder: (_)=>ViewMotorista());
 

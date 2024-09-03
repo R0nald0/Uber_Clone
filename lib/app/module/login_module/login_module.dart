@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:uber/app/module/login_module/login_controller.dart';
 import 'package:uber/app/module/login_module/login_page.dart';
@@ -12,12 +11,12 @@ class LoginModule extends Module {
   void binds(Injector i) {
     super.binds(i);
     i.addLazySingleton<IUserRepository>(() => UserRepositoryImpl(
-        auth: Modular.get<FirebaseAuth>(),
-        log: Modular.get(),
-        database: Modular.get()));
+          localStoreage: Modular.get(),
+          log: Modular.get(),
+        ));
     i.addLazySingleton<UserService>(
         () => UserServiceImpl(userRepository: Modular.get<IUserRepository>()));
-    i.addLazySingleton(() => LoginController(serviceUser: Modular.get()));
+    i.addLazySingleton(() => LoginController(serviceUser: Modular.get(),authRepository: Modular.get()));
   }
 
   @override

@@ -213,7 +213,7 @@ class RegisterPageState extends State<RegisterPage> with DialogLoader{
   }
 
   cadastrarUsuario(Usuario user) async{
-     await user.cadastrarUsuario( context,user);
+    // await user.cadastrarUsuario( context,user);
   }
 
   _snackBar(String erro){

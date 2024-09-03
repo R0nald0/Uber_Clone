@@ -1,9 +1,8 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-
-import '../../Rotas.dart';
-import '../../controller/Banco.dart';
 
 class Usuario {
   final String? idUsuario;
@@ -24,20 +23,18 @@ class Usuario {
     required this.longitude,
   });
 
-  
-  
 
- 
-
-  Map<String,dynamic> toMap(){
-    Map<String,dynamic> map={
-      'idUsuario' : idUsuario,
-      "nome" : nome,
-      "email":email,
-      "tipoUsuario":tipoUsuario,
+  Map<String, dynamic> toMap() {
+    return {
+      'idUsuario': idUsuario,
+      'email': email,
+      'nome': nome,
+      'tipoUsuario': tipoUsuario,
+      'senha': senha,
+      'latitude': latitude,
+      'longitude': longitude,
     };
-    return map;
-  } 
+  }
   
   factory Usuario.fromFirestore( DocumentSnapshot snapshot ){
      return  Usuario(
@@ -61,9 +58,6 @@ class Usuario {
   tipoUsuario = '',
   super();
 
-
-
-
   Map<String,dynamic> toMapUp(){
     Map<String,dynamic> map={
       'idUsuario' : idUsuario,
@@ -75,29 +69,6 @@ class Usuario {
     };
     return map;
   }
-
-  cadastrarUsuario(context,user) async{
-  try {
-  final userCredencia =   await Banco.auth.createUserWithEmailAndPassword(
-        email: email,
-        password: senha
-    );
-    
-     if (userCredencia.user != null) {
-     
-        // idUsuario = userCredencia.user?.uid;
-         await Banco.db.collection("usuario").doc(userCredencia.user!.uid).set(toMap());
-         tipoUsuario == "passageiro"
-          ?Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_VIEWPASSAGEIRO, (route) => false)
-          :Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_VIEWMOTORISTA, (route) => false);
-      }   
-} on Exception catch (e,s) {
-     print('errr  $e');
-     print('stack  $s');
-}
-  }
-
-
 
   Usuario copyWith({
     ValueGetter<String?>? idUsuario,
@@ -118,4 +89,20 @@ class Usuario {
       longitude: longitude ?? this.longitude,
     );
   }
+
+  factory Usuario.fromMap(Map<String, dynamic> map) {
+    return Usuario(
+      idUsuario: map['idUsuario'],
+      email: map['email'] ?? '',
+      nome: map['nome'] ?? '',
+      tipoUsuario: map['tipoUsuario'] ?? '',
+      senha: map['senha'] ?? '',
+      latitude: map['latitude']?.toDouble() ?? 0.0,
+      longitude: map['longitude']?.toDouble() ?? 0.0,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory Usuario.fromJson(String source) => Usuario.fromMap(json.decode(source));
 }

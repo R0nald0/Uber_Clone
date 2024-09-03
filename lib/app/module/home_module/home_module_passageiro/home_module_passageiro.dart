@@ -7,7 +7,8 @@ class HomeModulePassageiro extends Module {
   @override
   void binds(Injector i) {
       i.addLazySingleton( () => HomePassageiroController(
-        authRepository: Modular.get()
+        authRepository: Modular.get(),
+        userService: Modular.get()
       ));
     super.binds(i);
   }
@@ -15,6 +16,6 @@ class HomeModulePassageiro extends Module {
   @override
   void routes(RouteManager r) {
     super.routes(r);
-    r.child('/', child: (_) =>const HomePassageiroPage());
+    r.child('/', child: (_) => HomePassageiroPage(homePassageiroController: Modular.get() ));
   }
 }
