@@ -1,25 +1,32 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:uber/controller/Banco.dart';
 import 'package:uber/app/model/Destino.dart';
 
 import 'Usuario.dart';
 
 
 class Requisicao {
+  final String? id;
+  final Destino destino;
+  final Usuario passageiro;
+  final String status;
+  final Usuario? motorista;
+  final String valorCorrida;
+  
+  Requisicao({required this.id, required this.destino,required this.motorista,required this.passageiro,required this.status,required this.valorCorrida});
 
-  late String _id;
-  late Destino _destino;
-  late Usuario _passageiro;
-  late String status;
-  late Usuario _motorista;
-  late String valorCorrida;
-
-  Requisicao(){
+ /*  Requisicao.consulta(){
       //OBTENDO ID REQUISICAO DA COLLECION
       DocumentReference ref = Banco.db.collection("requisicao").doc();
       this.id = ref.id;
-  }
-
+  } */
+  
+  Requisicao.empty() :
+    id =null,
+    destino =Destino(),
+    motorista =Usuario.emptyUser(),
+    passageiro =Usuario.emptyUser(),
+    status ='',
+    valorCorrida ='',
+    super();
 
 
   Map<String,dynamic> toMap(){
@@ -55,29 +62,5 @@ class Requisicao {
     };
 
     return dadosRequisicao;
-  }
-
-  Usuario get motorista => _motorista;
-
-  set motorista(Usuario value) {
-    _motorista = value;
-  }
-
-  Usuario get passageiro => _passageiro;
-
-  set passageiro(Usuario value) {
-    _passageiro = value;
-  }
-
-  Destino get destino => _destino;
-
-  set destino(Destino value) {
-    _destino = value;
-  }
-
-  String get id => _id;
-
-  set id(String value) {
-    _id = value;
   }
 }

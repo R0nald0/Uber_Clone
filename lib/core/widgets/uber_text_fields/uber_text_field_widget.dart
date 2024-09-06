@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 
 class UberTextFieldWidget extends StatelessWidget {
-  final TextEditingController controller;
+  final TextEditingController? controller;
   final FormFieldValidator<String>? validator;
   final bool obscureText;
   final String? hintText;

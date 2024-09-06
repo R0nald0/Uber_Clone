@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:uber/app/module/core/authentication_controller.dart';
 import 'package:uber/app/repository/auth_repository/I_auth_repository.dart';
