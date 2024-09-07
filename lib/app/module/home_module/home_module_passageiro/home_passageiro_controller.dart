@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mobx/mobx.dart';
@@ -48,19 +50,29 @@ abstract class HomePassageiroControllerBase with Store {
 
   @readonly
   CameraPosition? _cameraPosition;
+  
+  @readonly
+  String? _myLocal;
 
-  Future<void> getCameraPosition() async {
-    if (_locationPermission != LocationPermission.denied &&
-        _locationPermission != LocationPermission.deniedForever) {
-      final camPositon = await Geolocator.getLastKnownPosition();
-      if (camPositon != null) {
-        _cameraPosition = CameraPosition(
+  Future<void> getCameraUserLocationPosition() async {
+      final permission = await Geolocator.checkPermission();
+    if (   permission == LocationPermission.denied ||
+           permission == LocationPermission.deniedForever
+        ) {
+          return;
+    }
+     
+    _locationPermission = permission; 
+
+    final camPositon = await Geolocator.getLastKnownPosition();
+          if (camPositon != null) {
+            _cameraPosition = CameraPosition(
           target: LatLng(camPositon.latitude, camPositon.longitude),
           zoom: 16,
         );
+         await setNameMyLocal(camPositon.latitude,camPositon.longitude);
         _moverCamera();
       }
-    }
   }
 
   Future<void> getDataUSerOn() async {
@@ -140,18 +152,29 @@ abstract class HomePassageiroControllerBase with Store {
       target: LatLng(actualPosition.latitude, actualPosition.longitude),
       zoom: 16,
     );
-
+     await setNameMyLocal(actualPosition.latitude, actualPosition.longitude);
     _moverCamera();
   }
 
   _moverCamera() async {
     if (_cameraPosition != null) {
       GoogleMapController controllerCamera = await controller.future;
-      controllerCamera
-          .animateCamera(CameraUpdate.newCameraPosition(_cameraPosition!));
+      controllerCamera.animateCamera(CameraUpdate.newCameraPosition(_cameraPosition!));
+      
     }
+  }
 
-    Future<void> _getLastPosition() async {
+Future<void> setNameMyLocal(double latitude ,double longitude)async {
+      _myLocal = null;
+      setLocaleIdentifier('pt_BR');
+     final placeMarkers  = await placemarkFromCoordinates(latitude, longitude);
+     final  placeMark = placeMarkers.first;
+     _myLocal = '${placeMark.thoroughfare},${placeMark.subLocality},${placeMark.subAdministrativeArea}';
+     if (kDebugMode) {
+       print(placeMark);
+     }
+}
+ Future<void> _getLastPosition() async {
       LocationSettings locationSettings = const LocationSettings(
           accuracy: LocationAccuracy.high, distanceFilter: 10);
 
@@ -171,7 +194,6 @@ abstract class HomePassageiroControllerBase with Store {
         }
       });
     }
-  }
 
   /* _moverCameraBound(LatLngBounds latLngBounds) async {
     GoogleMapController controllerBouds = await controller.future;

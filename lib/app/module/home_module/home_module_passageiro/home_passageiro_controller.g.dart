@@ -118,6 +118,24 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
     });
   }
 
+  late final _$_myLocalAtom =
+      Atom(name: 'HomePassageiroControllerBase._myLocal', context: context);
+
+  String? get myLocal {
+    _$_myLocalAtom.reportRead();
+    return super._myLocal;
+  }
+
+  @override
+  String? get _myLocal => myLocal;
+
+  @override
+  set _myLocal(String? value) {
+    _$_myLocalAtom.reportWrite(value, super._myLocal, () {
+      super._myLocal = value;
+    });
+  }
+
   @override
   String toString() {
     return '''

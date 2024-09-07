@@ -30,20 +30,21 @@ class HomePassageiroPage extends StatefulWidget {
   State<StatefulWidget> createState() => HomePassageiroPageState();
 }
 
-class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoader {
- 
+class HomePassageiroPageState extends State<HomePassageiroPage>
+    with DialogLoader {
   final disposerReactions = <ReactionDisposer>[];
-
-  CameraPosition positionCan = const CameraPosition(target: LatLng(-13.008864, -38.528722), zoom: 12);
+  CameraPosition positionCan =
+      const CameraPosition(target: LatLng(-13.008864, -38.528722), zoom: 12);
   final Set<Marker> _marcador = {};
   late BitmapDescriptor imgPassageiro;
-  final  _controllerDestino = TextEditingController(text: "farol da barra");
-
+  final _controllerDestino = TextEditingController();
+  final _controllerMyLocal = TextEditingController();
+  final formKey = GlobalKey<FormState>();
   List<String> listMenu = ["Configuraçoes", "Deslogar"];
   // late StreamSubscription<DocumentSnapshot> streamSubscription ;
 
   //DADOS Passageiro
-  String meuLoca = "";
+  String meuLoca = "Meu local";
 
   late Position _localPassageiros;
   late Position _localMotorista;
@@ -71,7 +72,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
   } */
 
   _moverCameraBound(LatLngBounds latLngBounds) async {
-    GoogleMapController controllerBouds = await widget.homePassageiroController.controller.future;
+    GoogleMapController controllerBouds =
+        await widget.homePassageiroController.controller.future;
     controllerBouds
         .animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 100));
   }
@@ -276,15 +278,10 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
   }
 
   _statusUberNaoChamdo() {
-   
-    
-   // _getPermissionLocation();
-    /* _exibirCaixasDeRotas = true;
-    _alterarBotoes(const Text("Procurar Motorista"), Colors.black, () {
-      _chamarUber();
-    }); */
+    // _getPermissionLocation();
+    _exibirCaixasDeRotas = true;
     _alterarBotoes(const Text("Procurar Motorista"), Colors.black, () async {
-        await widget.homePassageiroController.getPermissionLocation();
+      await widget.homePassageiroController.getPermissionLocation();
     });
   }
 
@@ -407,7 +404,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
           target: LatLng(positioFinal.latitude, positioFinal.longitude),
           zoom: 18);
     });
-   // _moverCamera(positionCan);
+    // _moverCamera(positionCan);
 
     _confirmarValor();
   }
@@ -419,7 +416,6 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
   }
 
   _recuperarDadosPassageiro() async {
-
     /*  User? user = await UsuarioFirebase.getFirebaseUser();
     if (user != null) {
       idUser = user.uid.toString();
@@ -428,65 +424,67 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
   }
   initReaction() {
     widget.homePassageiroController.getDataUSerOn();
-     final userReaction = reaction<Usuario?>((_)  => widget.homePassageiroController.usuario, (usuario) async {
-      if (usuario != null){
-           await widget.homePassageiroController.verfyActivatedRequisition();
-           
+    final userReaction = reaction<Usuario?>(
+        (_) => widget.homePassageiroController.usuario, (usuario) async {
+      if (usuario != null) {
+        await widget.homePassageiroController.verfyActivatedRequisition();
       }
     });
-  final erroReaction = reaction<String?>((_) => widget.homePassageiroController.errorMensager,
-        (error) {
+    final erroReaction = reaction<String?>(
+        (_) => widget.homePassageiroController.errorMensager, (error) {
       if (error != null) {
         callSnackBar("Nenhuma viagem ativa");
       }
     });
 
-    final requicaoReaction = reaction<Requisicao?>((_) => widget.homePassageiroController.requisicao, (requisicao) {
+    final requicaoReaction = reaction<Requisicao?>(
+        (_) => widget.homePassageiroController.requisicao, (requisicao) {
       if (requisicao == null || requisicao.id == null) {
-          _statusUberNaoChamdo();
+        _statusUberNaoChamdo();
       }
     });
 
-    final serviceEnableReaction = reaction<bool>((_) => widget.homePassageiroController.isServiceEnable, (isServiceEnable) {
-        if(!isServiceEnable){
-           callSnackBar("Ativse sua localização");
-        }
+    final serviceEnableReaction =
+        reaction<bool>((_) => widget.homePassageiroController.isServiceEnable,
+            (isServiceEnable) {
+      if (!isServiceEnable) {
+        callSnackBar("Ativse sua localização");
+      }
     });
 
-    final locationPermissionReaction  =reaction<LocationPermission?>((_)=> widget.homePassageiroController.locationPermission,(permission){
-            if (permission == LocationPermission.denied) {
-               dialogLocationPermissionDenied((){
-                    widget.homePassageiroController.getPermissionLocation();
-                 }
-               );
-            }else if(permission == LocationPermission.deniedForever){
-                dialogLocationPermissionDeniedForeve((){
-                    Geolocator.openAppSettings();
-                });
-            } 
+    final locationPermissionReaction = reaction<LocationPermission?>(
+        (_) => widget.homePassageiroController.locationPermission,
+        (permission) {
+      if (permission == LocationPermission.denied) {
+        dialogLocationPermissionDenied(() {
+          widget.homePassageiroController.getPermissionLocation();
+        });
+      } else if (permission == LocationPermission.deniedForever) {
+        dialogLocationPermissionDeniedForeve(() {
+          Geolocator.openAppSettings();
+        });
+      }
     });
 
-    final locationPermissionAcceptedReaction  =reaction<LocationPermission?>((_)=> widget.homePassageiroController.locationPermission,(permission){
-            if (permission != LocationPermission.denied && permission != LocationPermission.deniedForever) {
-                  widget.homePassageiroController.getCameraPosition();
-            }
-    });
-
-
-    disposerReactions.addAll([locationPermissionAcceptedReaction,erroReaction,userReaction,requicaoReaction,serviceEnableReaction,locationPermissionReaction]);
+    disposerReactions.addAll([
+      erroReaction,
+      userReaction,
+      requicaoReaction,
+      serviceEnableReaction,
+      locationPermissionReaction
+    ]);
   }
 
   @override
   void initState() {
     super.initState();
-     widget.homePassageiroController.getCameraPosition();
-    WidgetsBinding.instance.addPostFrameCallback((_)  {
+    widget.homePassageiroController.getCameraUserLocationPosition();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _recuperarDadosPassageiro();
       initReaction();
     });
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -495,7 +493,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
           actions: <Widget>[
             IconButton(
                 onPressed: () async {
-                  await widget.homePassageiroController.getCameraPosition();
+                  await widget.homePassageiroController.getPermissionLocation();
+                 // meuLoca = ;
                 },
                 icon: const Icon(Icons.my_location)),
             PopupMenuButton<String>(
@@ -514,59 +513,69 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
           padding: const EdgeInsets.all(1),
           child: Stack(
             children: <Widget>[
-              Observer(
-                builder: (_) {
-                  return  GoogleMap(
-                    myLocationEnabled: true,
-
-                    onCameraMove: (position) {
-                      // posicao da camera em movimento
-                    },
-                    initialCameraPosition: widget.homePassageiroController.cameraPosition ?? positionCan,
-                    onMapCreated: (GoogleMapController controller) {
-                      widget.homePassageiroController.controller.complete(controller);
-                    },
-                  );
-                }
-              ),
+              Observer(builder: (_) {
+                return GoogleMap(
+                  myLocationEnabled: true,
+                  onCameraMove: (position) {
+                    // posicao da camera em movimento
+                  },
+                  initialCameraPosition:
+                      widget.homePassageiroController.cameraPosition ??
+                          positionCan,
+                  onMapCreated: (GoogleMapController controller) {
+                    widget.homePassageiroController.controller
+                        .complete(controller);
+                  },
+                );
+              }),
               Visibility(
                 visible: _exibirCaixasDeRotas,
-                child: Stack(
-                  children: [
-                    Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: Padding(
-                          padding: const EdgeInsets.all(15),
-                          child: Column(
-                            children: <Widget>[
-                              UberTextFieldWidget(
-                                  controller:null ,
-                                  hintText: meuLoca,
-                                  inputType: TextInputType.streetAddress, 
-                                  prefixIcon: const Icon(Icons.location_on_rounded,color: Colors.green,),
-                                  validator: Validatorless.required('Campo Requerido'),
+                child: Form(
+                  key: formKey,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: Padding(
+                            padding: const EdgeInsets.all(15),
+                            child: Column(
+                              children: <Widget>[
+                                Observer(
+                                  builder: (_) {
+                                    return UberTextFieldWidget(
+                                      controller: _controllerMyLocal,
+                                      hintText: widget.homePassageiroController.myLocal ?? '',
+                                      inputType: TextInputType.streetAddress,
+                                      prefixIcon: const Icon(
+                                        Icons.location_on_rounded,
+                                        color: Colors.green,
+                                      ),
+                                      validator: Validatorless.required(
+                                          'Campo Requerido'),
+                                    );
+                                  },
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: UberTextFieldWidget(
+                                    controller: _controllerDestino,
+                                    hintText: 'Destno',
+                                    prefixIcon: const Icon(Icons.local_taxi),
+                                    validator: Validatorless.required(
+                                        'Campo Requerido'),
+                                    inputType: TextInputType.streetAddress,
                                   ),
-                              
-                              Padding(
-                                padding: const EdgeInsets.only(top: 10),
-                                child: 
-                                 UberTextFieldWidget(
-                                  controller: _controllerDestino,
-                                  hintText: 'Destno',
-                                  prefixIcon: const Icon(Icons.local_taxi),
-                                  validator: Validatorless.required('Campo Requerido'),
-                                  inputType: TextInputType.streetAddress,
-                                  ),
-                              )
-                            ],
-                          ),
-                        )),
-                  ],
+                                )
+                              ],
+                            ),
+                          )),
+                    ],
+                  ),
                 ),
               ),
-              _posicionaComponentesBtn()
+              _posicionaComponentesBtn(formKey)
             ],
           ),
         ));
@@ -589,7 +598,6 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
     });
   }
 
-  
   _meuLocal(double latitude, double longitud) async {
     List<Placemark> placemarkLocal =
         await placemarkFromCoordinates(latitude, longitud);
@@ -613,15 +621,12 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
     usuario.copyWith(longitude: _localPassageiros.longitude);
 
     Requisicao requisicao = Requisicao(
-      destino: destino,
-      id: null,
-      motorista: null,
-      passageiro: usuario,
-      status: Status.AGUARDANDO,
-      valorCorrida: valorFinalCorrida
-
-    );
-   
+        destino: destino,
+        id: null,
+        motorista: null,
+        passageiro: usuario,
+        status: Status.AGUARDANDO,
+        valorCorrida: valorFinalCorrida);
 
     //salvar dados a requisiçao
     Banco.db
@@ -630,9 +635,9 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
         .set(requisicao.toMap());
 
     setState(() {
-       if (requisicao.id != null ) {
-        _idRequisicao = requisicao.id! ;
-       }
+      if (requisicao.id != null) {
+        _idRequisicao = requisicao.id!;
+      }
     });
 
     //salvar dados da requisicao activa
@@ -703,7 +708,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
     });
   }
  */
-  _posicionaComponentesBtn() {
+  _posicionaComponentesBtn(GlobalKey<FormState> keyForm) {
     return Positioned(
       right: 0,
       left: 0,
@@ -719,7 +724,10 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
               textStyle:
                   const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           onPressed: () {
-            _functionPadrao();
+            final formValid = formKey.currentState?.validate() ?? false;
+            if (formValid) {
+              _functionPadrao();
+            }
           },
           child: _textoBotaoPadrao,
         ),
@@ -807,9 +815,10 @@ class HomePassageiroPageState extends State<HomePassageiroPage>  with DialogLoad
   @override
   void dispose() {
     for (var reaction in disposerReactions) {
-       reaction();
+      reaction();
     }
     _controllerDestino.dispose();
+    _controllerMyLocal.dispose();
     super.dispose();
     //  streamSubscription.cancel();
   }
