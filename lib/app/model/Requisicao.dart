@@ -1,11 +1,11 @@
-import 'package:uber/app/model/Destino.dart';
+import 'package:uber/app/model/addres.dart';
 
 import 'Usuario.dart';
 
 
 class Requisicao {
   final String? id;
-  final Destino destino;
+  final Addres destino;
   final Usuario passageiro;
   final String status;
   final Usuario? motorista;
@@ -21,7 +21,7 @@ class Requisicao {
   
   Requisicao.empty() :
     id =null,
-    destino =Destino(),
+    destino =Addres.emptyAddres(),
     motorista =Usuario.emptyUser(),
     passageiro =Usuario.emptyUser(),
     status ='',

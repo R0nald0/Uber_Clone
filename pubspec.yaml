@@ -50,6 +50,10 @@ dependencies:
   synchronized: ^3.2.0
   path: ^1.9.0
   shared_preferences: ^2.3.2
+  google_places:
+    path: ../google_place/  
+  flutter_typeahead: ^5.2.0  
+  flutter_polyline_points: ^2.1.0
    
 dev_dependencies:
   flutter_test:
@@ -88,6 +92,8 @@ flutter:
     - images/destino.png
     - images/carro.png
     - images/destino.png
+    - images/destination1.png
+    - images/destination2.png
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see

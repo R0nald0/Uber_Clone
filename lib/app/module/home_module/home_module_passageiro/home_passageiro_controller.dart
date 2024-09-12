@@ -1,17 +1,20 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mobx/mobx.dart';
 import 'package:uber/Rotas.dart';
 import 'package:uber/app/model/Requisicao.dart';
 import 'package:uber/app/model/Usuario.dart';
+import 'package:uber/app/model/addres.dart';
 import 'package:uber/app/repository/auth_repository/I_auth_repository.dart';
+import 'package:uber/app/repository/mapsCameraRepository/maps_camera_repository.dart';
+import 'package:uber/app/services/location_service/location_service_impl.dart';
 import 'package:uber/app/services/user_service/requisicao_service/I_requisicao_service.dart';
 import 'package:uber/app/services/user_service/user_service.dart';
+import 'package:uber/core/execptions/addres_exception.dart';
 import 'package:uber/core/execptions/requisicao_exception.dart';
 import 'package:uber/core/execptions/user_exception.dart';
 
@@ -24,15 +27,26 @@ abstract class HomePassageiroControllerBase with Store {
   final IAuthRepository _authRepository;
   final UserService _userService;
   final IRequisicaoService _requisicaoService;
-  final Completer<GoogleMapController> controller = Completer();
+  final LocationServiceImpl _locationServiceImpl;
+  final MapsCameraService _mapsCameraService;
+
+  final controller = Completer<GoogleMapController>();
 
   HomePassageiroControllerBase(
-      {required IAuthRepository authRepository,
+      {
+        required IAuthRepository authRepository,
       required UserService userService,
-      required IRequisicaoService requisicaoService})
+      required IRequisicaoService requisicaoService,
+      required LocationServiceImpl locattionService,
+      required MapsCameraService cameraService,
+     
+      })
       : _authRepository = authRepository,
         _userService = userService,
-        _requisicaoService = requisicaoService;
+        _requisicaoService = requisicaoService,
+        _locationServiceImpl = locattionService,
+        _mapsCameraService = cameraService;
+      
 
   @readonly
   String? _errorMensager;
@@ -52,12 +66,22 @@ abstract class HomePassageiroControllerBase with Store {
   CameraPosition? _cameraPosition;
   
   @readonly
-  String? _myLocal;
+  Addres? _myAddres;
+  
+  @readonly
+  Addres? _myDestination;
+
+  @readonly
+   var _markers = <Marker>{};
+   
+   @readonly
+   var _polynesRouter = <Polyline>{};
 
   Future<void> getCameraUserLocationPosition() async {
       final permission = await Geolocator.checkPermission();
-    if (   permission == LocationPermission.denied ||
-           permission == LocationPermission.deniedForever
+    if (  
+        permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever
         ) {
           return;
     }
@@ -70,8 +94,9 @@ abstract class HomePassageiroControllerBase with Store {
           target: LatLng(camPositon.latitude, camPositon.longitude),
           zoom: 16,
         );
-         await setNameMyLocal(camPositon.latitude,camPositon.longitude);
-        _moverCamera();
+
+        final address = await _locationServiceImpl.setNameMyLocal(camPositon.latitude,camPositon.longitude);
+        await setNameMyLocal(address);
       }
   }
 
@@ -148,56 +173,99 @@ abstract class HomePassageiroControllerBase with Store {
   Future<void> getUserLocation() async {
     final actualPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    _cameraPosition = CameraPosition(
-      target: LatLng(actualPosition.latitude, actualPosition.longitude),
-      zoom: 16,
-    );
-     await setNameMyLocal(actualPosition.latitude, actualPosition.longitude);
-    _moverCamera();
+       
+        final address = await _locationServiceImpl.setNameMyLocal(actualPosition.latitude, actualPosition.longitude);
+     await setNameMyLocal(address);
+  
   }
-
-  _moverCamera() async {
-    if (_cameraPosition != null) {
-      GoogleMapController controllerCamera = await controller.future;
-      controllerCamera.animateCamera(CameraUpdate.newCameraPosition(_cameraPosition!));
-      
-    }
-  }
-
-Future<void> setNameMyLocal(double latitude ,double longitude)async {
-      _myLocal = null;
-      setLocaleIdentifier('pt_BR');
-     final placeMarkers  = await placemarkFromCoordinates(latitude, longitude);
-     final  placeMark = placeMarkers.first;
-     _myLocal = '${placeMark.thoroughfare},${placeMark.subLocality},${placeMark.subAdministrativeArea}';
-     if (kDebugMode) {
-       print(placeMark);
+  
+Future<void> setNameMyLocal(Addres addres)async {
+       _myAddres = null;
+       _myAddres = addres;
+       _cameraPosition = CameraPosition(
+       target: LatLng(addres.latitude, addres.longitude),
+       zoom: 16,
+     );
+     
+     if(_usuario != null){
+         final te =  await addMarcador("destination1", 0.0);
+          final myMarkerLocal = _createMarker(addres,te,"my_local",'meu local',10);
+          _markers.add(myMarkerLocal);
+         showAllPositionsAndTraceRouter();
      }
 }
- Future<void> _getLastPosition() async {
-      LocationSettings locationSettings = const LocationSettings(
-          accuracy: LocationAccuracy.high, distanceFilter: 10);
 
-      StreamSubscription<Position> positions =
-          Geolocator.getPositionStream(locationSettings: locationSettings)
-              .listen((Position position) {
-        if (position != null) {
-          _cameraPosition = CameraPosition(
-              target: LatLng(position.latitude, position.longitude), zoom: 19);
-          //  _meuLocal(position.latitude, position.longitude);
-          // _localPassageiros = position;
-          //   _addMarcador(position, "passageiro", "Meu local");
+Future<void> setDestinationLocal(Addres addres)async {
+       _myDestination = null;
+       _myDestination = addres;
+       
+       _cameraPosition = CameraPosition(
+       target: LatLng(addres.latitude, addres.longitude),
+       zoom: 16,
+     );
+      
+      final te =  await addMarcador("destination2", 200);
+       final myMarkerLocal = _createMarker(addres,te ,"my_local_destination",'Meu destino',90);
+          _markers.add(myMarkerLocal);
+      showAllPositionsAndTraceRouter();   
+}
 
-          //   _moverCamera(positionCan);
-        } else {
-          Geolocator.requestPermission();
-        }
-      });
-    }
+void showAllPositionsAndTraceRouter() {
+  if(_myAddres != null && _myDestination != null){
+           if (_myAddres!.nomeDestino.isNotEmpty && _myDestination!.nomeDestino.isNotEmpty) {
+              _mapsCameraService.moverCameraBound(_myAddres!,_myDestination!,60, controller);
+              traceRouter();
+           }
+  }else{
+    if (_cameraPosition != null) {
+          _mapsCameraService.moveCamera(_cameraPosition!, controller);
+      }
+  }  
+}
 
-  /* _moverCameraBound(LatLngBounds latLngBounds) async {
-    GoogleMapController controllerBouds = await controller.future;
-    controllerBouds
-        .animateCamera(CameraUpdate.newLatLngBounds(_cameraPosition., 100));
-  } */
+
+
+Future<List<Addres>> findAddresByName(String addresName) async{
+     try {
+       if (addresName.isNotEmpty) {
+          return await _locationServiceImpl.findAddresByName(addresName);
+       }
+       return <Addres>[];
+     } on AddresException catch (e) {
+       _errorMensager = e.message;
+       return<Addres>[];
+     }
+}
+
+Future<AssetMapBitmap> addMarcador( String caminho,double devicePixelRatio) async {
+     
+     const configuration = ImageConfiguration(size: Size(23, 23));
+     final pathImage = "images/$caminho.png";
+     final assetBitMap =  BitmapDescriptor.asset(configuration,pathImage);
+
+     return assetBitMap;
+  }
+
+Marker _createMarker(Addres addres,BitmapDescriptor? icon,String idMarcador,String tiuloLocal ,double hue)  {
+    return Marker(
+        markerId: MarkerId(idMarcador),
+        infoWindow: InfoWindow(title: tiuloLocal),
+        position: LatLng(addres.latitude, addres.longitude),
+        icon: icon ?? BitmapDescriptor.defaultMarkerWithHue(hue));
+  }
+
+@action  
+Future<void> traceRouter() async{
+      _polynesRouter = <Polyline>{};
+      if(_myAddres != null && _myDestination != null){
+               if (_myAddres!.nomeDestino.isNotEmpty && _myDestination!.nomeDestino.isNotEmpty) {
+                   final mapRoutes =  await  _locationServiceImpl.getRoute(_myAddres!, _myDestination!,Colors.black,5);
+                    final lines = Set<Polyline>.of(mapRoutes.values);
+                   _polynesRouter = lines;
+               }
+      }
+  
+} 
+
+ 
 }

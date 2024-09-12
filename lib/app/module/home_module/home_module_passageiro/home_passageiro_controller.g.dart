@@ -118,22 +118,84 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
     });
   }
 
-  late final _$_myLocalAtom =
-      Atom(name: 'HomePassageiroControllerBase._myLocal', context: context);
+  late final _$_myAddresAtom =
+      Atom(name: 'HomePassageiroControllerBase._myAddres', context: context);
 
-  String? get myLocal {
-    _$_myLocalAtom.reportRead();
-    return super._myLocal;
+  Addres? get myAddres {
+    _$_myAddresAtom.reportRead();
+    return super._myAddres;
   }
 
   @override
-  String? get _myLocal => myLocal;
+  Addres? get _myAddres => myAddres;
 
   @override
-  set _myLocal(String? value) {
-    _$_myLocalAtom.reportWrite(value, super._myLocal, () {
-      super._myLocal = value;
+  set _myAddres(Addres? value) {
+    _$_myAddresAtom.reportWrite(value, super._myAddres, () {
+      super._myAddres = value;
     });
+  }
+
+  late final _$_myDestinationAtom = Atom(
+      name: 'HomePassageiroControllerBase._myDestination', context: context);
+
+  Addres? get myDestination {
+    _$_myDestinationAtom.reportRead();
+    return super._myDestination;
+  }
+
+  @override
+  Addres? get _myDestination => myDestination;
+
+  @override
+  set _myDestination(Addres? value) {
+    _$_myDestinationAtom.reportWrite(value, super._myDestination, () {
+      super._myDestination = value;
+    });
+  }
+
+  late final _$_markersAtom =
+      Atom(name: 'HomePassageiroControllerBase._markers', context: context);
+
+  Set<Marker> get markers {
+    _$_markersAtom.reportRead();
+    return super._markers;
+  }
+
+  @override
+  Set<Marker> get _markers => markers;
+
+  @override
+  set _markers(Set<Marker> value) {
+    _$_markersAtom.reportWrite(value, super._markers, () {
+      super._markers = value;
+    });
+  }
+
+  late final _$_polynesRouterAtom = Atom(
+      name: 'HomePassageiroControllerBase._polynesRouter', context: context);
+
+  Set<Polyline> get polynesRouter {
+    _$_polynesRouterAtom.reportRead();
+    return super._polynesRouter;
+  }
+
+  @override
+  Set<Polyline> get _polynesRouter => polynesRouter;
+
+  @override
+  set _polynesRouter(Set<Polyline> value) {
+    _$_polynesRouterAtom.reportWrite(value, super._polynesRouter, () {
+      super._polynesRouter = value;
+    });
+  }
+
+  late final _$traceRouterAsyncAction =
+      AsyncAction('HomePassageiroControllerBase.traceRouter', context: context);
+
+  @override
+  Future<void> traceRouter() {
+    return _$traceRouterAsyncAction.run(() => super.traceRouter());
   }
 
   @override

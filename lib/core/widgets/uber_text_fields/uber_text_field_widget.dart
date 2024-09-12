@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+typedef OnChanged = Function(String)?;
 
 class UberTextFieldWidget extends StatelessWidget {
   final TextEditingController? controller;
@@ -7,9 +8,12 @@ class UberTextFieldWidget extends StatelessWidget {
   final bool obscureText;
   final String? hintText;
   final String? label; 
+  final FocusNode?  focosNode;
   final TextInputType? inputType;
+  final bool autoFocos;
   final Icon? prefixIcon;
   final ValueNotifier<bool> _obscureTextVN;
+  final OnChanged onChange;
 
   UberTextFieldWidget({
     super.key,
@@ -20,6 +24,9 @@ class UberTextFieldWidget extends StatelessWidget {
     this.validator,
     this.prefixIcon,
     this.inputType,
+    this.focosNode,
+    this.autoFocos =false,
+    this.onChange
   }) : _obscureTextVN = ValueNotifier(obscureText);
 
   @override
@@ -29,7 +36,10 @@ class UberTextFieldWidget extends StatelessWidget {
         builder: (_, vNObscureText, __) {
           return TextFormField(
             controller: controller,
+            onChanged: onChange,
             keyboardType: inputType,
+            focusNode: focosNode,
+            autofocus: autoFocos,
             validator:validator ,
             obscureText: vNObscureText,
             decoration: InputDecoration(
@@ -38,7 +48,7 @@ class UberTextFieldWidget extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: Colors.amber,
               ),
-              label:label != null ? Text(label!,style:TextStyle(fontSize: 20),) : null,
+              label:label != null ? Text(label!,style:const TextStyle(fontSize: 20),) : null,
               suffixIcon: obscureText
                         ? IconButton(
                             onPressed: () {
