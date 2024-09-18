@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber/app/model/addres.dart';
+import 'package:uber/app/model/polyline_data.dart';
 import 'package:uber/app/repository/location_repository/location_repository.dart';
 
 class LocationServiceImpl {
@@ -19,7 +19,7 @@ class LocationServiceImpl {
       _locationRepository.findAddresByName(nameAddres);
   void getUserLocation() {}
 
-  Future<Map<PolylineId, Polyline>> getRoute(
+  Future<PolylineData> getRoute(
           Addres myLocation, Addres myDestination,Color lineColor,int widthLine) =>
       _locationRepository.getRouteTrace(myLocation, myDestination,lineColor,widthLine);
 }

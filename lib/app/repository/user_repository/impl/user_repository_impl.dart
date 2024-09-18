@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uber/app/model/Usuario.dart';
 import 'package:uber/app/repository/user_repository/i_user_repository.dart';
 import 'package:uber/core/constants/uber_clone_contstants.dart';
-import 'package:uber/core/execptions/user_exception.dart';
+import 'package:uber/core/exceptions/user_exception.dart';
 import 'package:uber/core/local_storage/local_storage.dart';
 import 'package:uber/core/logger/app_uber_log.dart';
 

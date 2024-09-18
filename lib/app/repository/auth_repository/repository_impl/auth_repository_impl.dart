@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uber/app/repository/auth_repository/I_auth_repository.dart';
-import 'package:uber/core/execptions/user_exception.dart';
+import 'package:uber/core/exceptions/user_exception.dart';
 import 'package:uber/core/local_storage/local_storage.dart';
 import 'package:uber/core/logger/app_uber_log.dart';
 import 'package:uber/core/offline_database/database_off_line.dart';

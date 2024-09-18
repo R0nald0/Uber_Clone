@@ -4,8 +4,8 @@ import 'package:mobx/mobx.dart';
 import 'package:uber/Rotas.dart';
 import 'package:uber/app/repository/auth_repository/I_auth_repository.dart';
 import 'package:uber/core/constants/uber_clone_contstants.dart';
-import 'package:uber/core/execptions/auth_exception.dart';
-import 'package:uber/core/execptions/user_exception.dart';
+import 'package:uber/core/exceptions/auth_exception.dart';
+import 'package:uber/core/exceptions/user_exception.dart';
 import 'package:uber/core/local_storage/local_storage.dart';
 
 part 'authentication_controller.g.dart';

@@ -5,7 +5,8 @@ import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_places/google_places.dart';
 import 'package:uber/app/model/addres.dart';
-import 'package:uber/core/execptions/addres_exception.dart';
+import 'package:uber/app/model/polyline_data.dart';
+import 'package:uber/core/exceptions/addres_exception.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class LocationRepositoryImpl {
@@ -61,7 +62,7 @@ class LocationRepositoryImpl {
     return <Addres>[];
   }
 
-  Future<Map<PolylineId, Polyline>> getRouteTrace(
+  Future<PolylineData> getRouteTrace(
       Addres myLocation, Addres myDestination,Color lineColor,int widthLine) async {
     final apiKey = dotenv.env['maps_key'];
     if (apiKey == null) {
@@ -86,8 +87,16 @@ class LocationRepositoryImpl {
         poliCordernate.add(LatLng(point.latitude, point.longitude));
       }
     }
+    final route = _createPolineRoute(poliCordernate,lineColor,widthLine); 
+    final polylineData = PolylineData(
+      router: route, 
+      distanceBetween: polylineResult.distanceTexts?.first ?? '', 
+      durationBetweenPoints: polylineResult.durationTexts?.first ?? '',
+      distanceInt: polylineResult.totalDistanceValue ?? 0,
+      duration: polylineResult.totalDurationValue ?? 0
 
-    return _createPolineRoute(poliCordernate,lineColor,widthLine);
+      );  
+    return polylineData;
   }
 
   Map<PolylineId, Polyline> _createPolineRoute(

@@ -4,7 +4,7 @@ import 'package:mobx/mobx.dart';
 import 'package:uber/Rotas.dart';
 import 'package:uber/app/repository/auth_repository/I_auth_repository.dart';
 import 'package:uber/app/services/user_service/user_service.dart';
-import 'package:uber/core/execptions/user_exception.dart';
+import 'package:uber/core/exceptions/user_exception.dart';
 
 part 'login_controller.g.dart';
 

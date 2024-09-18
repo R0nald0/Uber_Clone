@@ -9,6 +9,42 @@ part of 'home_passageiro_controller.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic, no_leading_underscores_for_local_identifiers
 
 mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
+  late final _$_tripsAtom =
+      Atom(name: 'HomePassageiroControllerBase._trips', context: context);
+
+  List<Trip> get trips {
+    _$_tripsAtom.reportRead();
+    return super._trips;
+  }
+
+  @override
+  List<Trip> get _trips => trips;
+
+  @override
+  set _trips(List<Trip> value) {
+    _$_tripsAtom.reportWrite(value, super._trips, () {
+      super._trips = value;
+    });
+  }
+
+  late final _$_tripSelectedAtom = Atom(
+      name: 'HomePassageiroControllerBase._tripSelected', context: context);
+
+  Trip? get tripSelected {
+    _$_tripSelectedAtom.reportRead();
+    return super._tripSelected;
+  }
+
+  @override
+  Trip? get _tripSelected => tripSelected;
+
+  @override
+  set _tripSelected(Trip? value) {
+    _$_tripSelectedAtom.reportWrite(value, super._tripSelected, () {
+      super._tripSelected = value;
+    });
+  }
+
   late final _$_errorMensagerAtom = Atom(
       name: 'HomePassageiroControllerBase._errorMensager', context: context);
 
@@ -190,12 +226,69 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
     });
   }
 
+  late final _$getUserLocationAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.getUserLocation',
+      context: context);
+
+  @override
+  Future<void> getUserLocation() {
+    return _$getUserLocationAsyncAction.run(() => super.getUserLocation());
+  }
+
+  late final _$setNameMyLocalAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.setNameMyLocal',
+      context: context);
+
+  @override
+  Future<void> setNameMyLocal(Addres addres) {
+    return _$setNameMyLocalAsyncAction.run(() => super.setNameMyLocal(addres));
+  }
+
+  late final _$setDestinationLocalAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.setDestinationLocal',
+      context: context);
+
+  @override
+  Future<void> setDestinationLocal(Addres addres) {
+    return _$setDestinationLocalAsyncAction
+        .run(() => super.setDestinationLocal(addres));
+  }
+
+  late final _$showAllPositionsAndTraceRouterAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.showAllPositionsAndTraceRouter',
+      context: context);
+
+  @override
+  Future<void> showAllPositionsAndTraceRouter() {
+    return _$showAllPositionsAndTraceRouterAsyncAction
+        .run(() => super.showAllPositionsAndTraceRouter());
+  }
+
+  late final _$findAddresByNameAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.findAddresByName',
+      context: context);
+
+  @override
+  Future<List<Addres>> findAddresByName(String addresName) {
+    return _$findAddresByNameAsyncAction
+        .run(() => super.findAddresByName(addresName));
+  }
+
   late final _$traceRouterAsyncAction =
       AsyncAction('HomePassageiroControllerBase.traceRouter', context: context);
 
   @override
   Future<void> traceRouter() {
     return _$traceRouterAsyncAction.run(() => super.traceRouter());
+  }
+
+  late final _$selectedTripAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.selectedTrip',
+      context: context);
+
+  @override
+  Future<void> selectedTrip(Trip trip) {
+    return _$selectedTripAsyncAction.run(() => super.selectedTrip(trip));
   }
 
   @override

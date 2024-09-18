@@ -12,6 +12,7 @@ import 'package:uber/app/model/Marcador.dart';
 import 'package:uber/app/model/Requisicao.dart';
 import 'package:uber/app/model/Usuario.dart';
 import 'package:uber/app/model/addres.dart';
+import 'package:uber/app/module/core/widgets/uber_list_trip.dart';
 import 'package:uber/app/module/home_module/home_module_passageiro/home_passageiro_controller.dart';
 import 'package:uber/app/util/Status.dart';
 import 'package:uber/app/util/UsuarioFirebase.dart';
@@ -58,7 +59,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
   late Widget _textoBotaoPadrao = const CircularProgressIndicator(
     color: Colors.white,
   );
-  late Color _corBotaoPadrao = Colors.white12;
+  late Color _corBotaoPadrao = const Color.fromARGB(31, 247, 243, 243);
   late Function _functionPadrao = () {};
 
   String _idRequisicao = " ";
@@ -87,8 +88,6 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
       crirarMarcador(position, ic, caminho, titulo);
     });
   }
-
-
 
   crirarMarcador(Position position, BitmapDescriptor imgLocal,
       String idMarcador, tiuloLocal) async {
@@ -261,7 +260,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     Marcador marcadorDestino = Marcador(
         LatLng(passLatitude, passLongitude), 'passageiro', 'Estou Aqui');
 
-  //  _exibirPosicoesMarcadores(marcadorOrigem, marcadorDestino);
+    //  _exibirPosicoesMarcadores(marcadorOrigem, marcadorDestino);
     _alterarBotoes(
         Column(children: <Widget>[
           Text(
@@ -302,7 +301,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     Marcador marcadorDestino =
         Marcador(LatLng(latDestino, longDestino), 'destino', destino);
 
-   // _exibirPosicoesMarcadores(marcadorOrigem, marcadorDestino);
+    // _exibirPosicoesMarcadores(marcadorOrigem, marcadorDestino);
 
     _alterarBotoes(Text("Á caminho de $destino"), _corBotaoPadrao, () {});
   }
@@ -444,7 +443,6 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                 return GoogleMap(
                   polylines: widget.homePassageiroController.polynesRouter,
                   markers: widget.homePassageiroController.markers,
-                  myLocationEnabled: true,
                   onCameraMove: (position) {
                     // posicao da camera em movimento
                   },
@@ -532,7 +530,27 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
               ),
               UberButtonElevated(
                   formKey: formKey,
-                  functionPadrao: () => _functionPadrao(),
+                  functionPadrao: () {
+                    showModalBottomSheet(
+                      enableDrag: true,
+                      context: context,
+                      builder: (contextBottom) {
+                        return Observer(
+                          builder: (contextBottom) {
+                            return UberListTrip(
+                                tripOptions:
+                                    widget.homePassageiroController.trips,
+                                tripSelected: widget
+                                    .homePassageiroController.tripSelected,
+                                onSelected: (tripSelected) {
+                                  widget.homePassageiroController
+                                      .selectedTrip(tripSelected);
+                                });
+                          },
+                        );
+                      },
+                    );
+                  },
                   textoPadrao: _textoBotaoPadrao,
                   corDoBotaoPadrao: _corBotaoPadrao),
             ],
@@ -706,13 +724,13 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
             latitude: location.latitude,
             longitude: location.longitude);
 
-        String custoCorrida = await _calcularValorVieagem(
+      /*   String custoCorrida = await _calcularValorVieagem(
             _localPassageiros.latitude,
             _localPassageiros.longitude,
             destino.latitude,
-            destino.longitude);
+            destino.longitude); */
 
-        criarDialg(destino, context, custoCorrida);
+        criarDialg(destino, context, "custoCorrida");
       }
     }
   }
@@ -726,24 +744,9 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     } */
   }
 
-  Future<String> _calcularValorVieagem(
-      double latOrigem, longOrigem, latDestino, longDestino) async {
-    double distanciaEntreOrigemDestino = Geolocator.distanceBetween(
-        latOrigem, longOrigem, latDestino, longDestino);
+ 
 
-    double distanciaKm = distanciaEntreOrigemDestino / 1000;
-    double valorDacorrida = distanciaKm * 5;
-
-    String valorCobrado = formatarValor(valorDacorrida);
-
-    return valorCobrado;
-  }
-
-  String formatarValor(double unFormatedValue) {
-    var valor = NumberFormat('##,##0.00', 'pt-BR');
-    String total = valor.format(unFormatedValue);
-    return total;
-  }
+  
 
   @override
   void dispose() {

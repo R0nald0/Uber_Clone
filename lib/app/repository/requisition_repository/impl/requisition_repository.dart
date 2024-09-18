@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uber/app/model/Requisicao.dart';
 import 'package:uber/app/repository/requisition_repository/i_requisition_repository.dart';
-import 'package:uber/core/execptions/requisicao_exception.dart';
+import 'package:uber/core/exceptions/requisicao_exception.dart';
 import 'package:uber/core/logger/app_uber_log.dart';
 
 class RequisitionRepository implements IRequisitionRepository {
