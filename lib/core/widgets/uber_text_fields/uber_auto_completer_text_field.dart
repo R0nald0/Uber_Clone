@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:uber/app/model/addres.dart';
+import 'package:uber/app/util/debaunce.dart';
 import 'package:uber/core/widgets/uber_text_fields/uber_text_field_widget.dart';
 
 typedef OnSelectedAddres = void Function(Addres)?;
@@ -28,13 +29,16 @@ class UberAutoCompleterTextField extends StatefulWidget {
 }
 
 class _UberAutoCompleterTextFieldState extends State<UberAutoCompleterTextField> {
- var  addresNameSelceted = '';
+   var  addresNameSelceted = '';
+  final debauncee = Debaunce(milliseconds: 1000);
+
   
   @override
   void initState() {
     if (widget.hintText != null) {
         addresNameSelceted = widget.hintText ?? '';
     }
+    
     super.initState();
   } 
 
@@ -44,8 +48,14 @@ class _UberAutoCompleterTextFieldState extends State<UberAutoCompleterTextField>
       itemBuilder: itemBuilder,
       onSelected: onSelected,
       suggestionsCallback: (search) async {
-         await Future.delayed(const Duration(milliseconds: 00));
-         return widget.getAddresCallSuggestion(search);
+           var sugestions  = <Addres>[];
+           sugestions = await widget.getAddresCallSuggestion(search);
+           debauncee.run(() async {
+            sugestions = await widget.getAddresCallSuggestion(search);
+          
+            }
+            );
+         return sugestions;
         },
       builder: (context, controller, focusNode) {
            controller.text = addresNameSelceted;
@@ -53,8 +63,7 @@ class _UberAutoCompleterTextFieldState extends State<UberAutoCompleterTextField>
           controller: controller,
           focosNode: focusNode,
           onChange: (value )async {
-             await Future.delayed(const Duration( milliseconds:700));
-             addresNameSelceted =value;
+            addresNameSelceted =value;
           },
           prefixIcon:widget.prefIcon,
          
@@ -69,7 +78,7 @@ class _UberAutoCompleterTextFieldState extends State<UberAutoCompleterTextField>
   void onSelected(Addres? addres) {
      if (addres != null) {
         addresNameSelceted = addres.nomeDestino;
-        print('${addresNameSelceted} !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+  
         widget.onSelcetedAddes!(addres);
      }
   }

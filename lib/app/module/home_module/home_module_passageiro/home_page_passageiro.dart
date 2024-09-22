@@ -531,6 +531,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
               UberButtonElevated(
                   formKey: formKey,
                   functionPadrao: () {
+              
                     showModalBottomSheet(
                       enableDrag: true,
                       context: context,
@@ -549,7 +550,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                           },
                         );
                       },
-                    );
+                    ); 
                   },
                   textoPadrao: _textoBotaoPadrao,
                   corDoBotaoPadrao: _corBotaoPadrao),

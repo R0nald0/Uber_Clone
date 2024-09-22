@@ -1,21 +1,21 @@
 import 'dart:async';
 
+
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:mobx/mobx.dart';
 import 'package:uber/Rotas.dart';
 import 'package:uber/app/model/Requisicao.dart';
 import 'package:uber/app/model/Usuario.dart';
 import 'package:uber/app/model/addres.dart';
 import 'package:uber/app/model/polyline_data.dart';
-import 'package:uber/app/model/tipo_viagem.dart';
 import 'package:uber/app/model/trip.dart';
 import 'package:uber/app/repository/auth_repository/I_auth_repository.dart';
 import 'package:uber/app/repository/mapsCameraRepository/maps_camera_repository.dart';
 import 'package:uber/app/services/location_service/location_service_impl.dart';
+import 'package:uber/app/services/trip_service/trip_service.dart';
 import 'package:uber/app/services/user_service/requisicao_service/I_requisicao_service.dart';
 import 'package:uber/app/services/user_service/user_service.dart';
 import 'package:uber/core/exceptions/addres_exception.dart';
@@ -33,6 +33,7 @@ abstract class HomePassageiroControllerBase with Store {
   final IRequisicaoService _requisicaoService;
   final LocationServiceImpl _locationServiceImpl;
   final MapsCameraService _mapsCameraService;
+  final TripService _tripService;
 
   final controller = Completer<GoogleMapController>();
 
@@ -42,14 +43,16 @@ abstract class HomePassageiroControllerBase with Store {
     required IRequisicaoService requisicaoService,
     required LocationServiceImpl locattionService,
     required MapsCameraService cameraService,
+    required TripService tripService,
   })  : _authRepository = authRepository,
         _userService = userService,
         _requisicaoService = requisicaoService,
         _locationServiceImpl = locattionService,
-        _mapsCameraService = cameraService;
+        _mapsCameraService = cameraService,
+        _tripService = tripService;
 
   @readonly
-  var _trips = <Trip>[];  
+  var _trips = <Trip>[];
 
   @readonly
   Trip? _tripSelected;
@@ -76,6 +79,17 @@ abstract class HomePassageiroControllerBase with Store {
 
   @readonly
   Addres? _myDestination;
+
+  @computed
+  bool get isAddressNotNullOrEmpty {
+       if (_myAddres != null && _myDestination != null) {
+       if (_myAddres!.nomeDestino.isNotEmpty &&
+          _myDestination!.nomeDestino.isNotEmpty) {
+        return true; 
+      }
+    }
+     return false;
+  }
 
   @readonly
   var _markers = <Marker>{};
@@ -189,15 +203,16 @@ abstract class HomePassageiroControllerBase with Store {
   Future<void> setNameMyLocal(Addres addres) async {
     _myAddres = null;
     _myAddres = addres;
+
     _cameraPosition = CameraPosition(
       target: LatLng(addres.latitude, addres.longitude),
       zoom: 16,
     );
 
     if (_usuario != null) {
-      final pathImageIcon = await addMarcador("destination1", 0.0);
+      final pathImageIcon = await _locationServiceImpl.markerPositionIconCostomizer("destination1", 0.0);
       final myMarkerLocal =
-          _createMarker(addres, pathImageIcon, "my_local", 'meu local', 10);
+         _locationServiceImpl.createLocationMarker(addres, pathImageIcon, "my_local", 'meu local', 10);
       _markers.add(myMarkerLocal);
       showAllPositionsAndTraceRouter();
     }
@@ -213,8 +228,8 @@ abstract class HomePassageiroControllerBase with Store {
       zoom: 16,
     );
 
-    final pathImageIcon = await addMarcador("destination2", 200);
-    final myMarkerLocal = _createMarker(
+    final pathImageIcon = await _locationServiceImpl.markerPositionIconCostomizer("destination2", 200);
+    final myMarkerLocal = _locationServiceImpl.createLocationMarker(
         addres, pathImageIcon, "my_local_destination", 'Meu destino', 90);
     _markers.add(myMarkerLocal);
     showAllPositionsAndTraceRouter();
@@ -222,13 +237,11 @@ abstract class HomePassageiroControllerBase with Store {
 
   @action
   Future<void> showAllPositionsAndTraceRouter() async {
-    if (_myAddres != null && _myDestination != null) {
-      if (_myAddres!.nomeDestino.isNotEmpty &&
-          _myDestination!.nomeDestino.isNotEmpty) {
-        _mapsCameraService.moverCameraBound(
+    if (isAddressNotNullOrEmpty) {
+          _mapsCameraService.moverCameraBound(
             _myAddres!, _myDestination!, 60, controller);
-        await traceRouter();
-      }
+          await traceRouter();
+      
     } else {
       if (_cameraPosition != null) {
         _mapsCameraService.moveCamera(_cameraPosition!, controller);
@@ -248,83 +261,31 @@ abstract class HomePassageiroControllerBase with Store {
       return <Addres>[];
     }
   }
-
-  Future<AssetMapBitmap> addMarcador(
-      String caminho, double devicePixelRatio) async {
-    const configuration = ImageConfiguration(size: Size(23, 23));
-    final pathImage = "images/$caminho.png";
-    final assetBitMap = BitmapDescriptor.asset(configuration, pathImage);
-
-    return assetBitMap;
-  }
-
-  Marker _createMarker(Addres addres, BitmapDescriptor? icon, String idMarcador,
-      String tiuloLocal, double hue) {
-    return Marker(
-        markerId: MarkerId(idMarcador),
-        infoWindow: InfoWindow(title: tiuloLocal),
-        position: LatLng(addres.latitude, addres.longitude),
-        icon: icon ?? BitmapDescriptor.defaultMarkerWithHue(hue));
-  }
+  
 
   @action
   Future<void> traceRouter() async {
     _polynesRouter = <Polyline>{};
-    if (_myAddres != null && _myDestination != null) {
-      if (_myAddres!.nomeDestino.isNotEmpty &&
-          _myDestination!.nomeDestino.isNotEmpty) {
-        final polylinesData = await _locationServiceImpl.getRoute(
+    if (isAddressNotNullOrEmpty) {
+        final polylinesData = await _tripService.getRoute(
             _myAddres!, _myDestination!, Colors.black, 5);
-        final lines = Set<Polyline>.of(polylinesData.router.values);
-        _polynesRouter = lines;
-        configireTripList(polylinesData);
-      }
+        final linesCordenates = Set<Polyline>.of(polylinesData.router.values);
+        _polynesRouter = linesCordenates;
+        _configireTripList(polylinesData);
+    }
+  }
+  
+
+
+  void _configireTripList(PolylineData data) {
+    if (_polynesRouter.isNotEmpty) {
+      final trips = _tripService.configireTripList(data);
+      _trips = trips;
     }
   }
 
-  void configireTripList(PolylineData data) {
-   
-    final distanceBetweenPoint = data.distanceInt.toDouble();
-
-    final priceUberX = _calcularValorVieagem(distanceBetweenPoint,TipoViagem.uberX);
-    final priceMoto = _calcularValorVieagem(distanceBetweenPoint,TipoViagem.uberMoto);
-
-    _trips = [
-      Trip(
-          type: 'UberX',
-          price: priceUberX,
-          timeTripe: data.durationBetweenPoints,
-          distance: data.distanceBetween,
-          quatitePersons: 4),
-      Trip(
-          type: 'Uber Moto ',
-          price: priceMoto,
-          timeTripe: data.durationBetweenPoints,
-          distance: data.distanceBetween,
-          quatitePersons: null)
-    ];
-  }
-
-  String _calcularValorVieagem(
-      double distanceBetweenPoint, TipoViagem tipoViagem) {
-    final taxaCorrida = tipoViagem == TipoViagem.uberX ? 4 : 2;
-    double distanciaKm = distanceBetweenPoint / 1000;
-    double valorDacorrida = distanciaKm * taxaCorrida;
-
-    String valorCobrado = formatarValor(valorDacorrida);
-
-    return valorCobrado;
-  }
-
-  String formatarValor(double unFormatedValue) {
-    var valor = NumberFormat('##,##0.00', 'pt-BR');
-    String total = valor.format(unFormatedValue);
-    return total;
-  }
-
   @action
-  Future<void> selectedTrip(Trip trip) async{
-      _tripSelected = trip;
-  } 
-
+  Future<void> selectedTrip(Trip trip) async {
+    _tripSelected = trip;
+  }
 }
