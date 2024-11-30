@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:uber/SplashScreen.dart';
-import 'package:uber/views/Cadastro.dart';
-import 'package:uber/views/Home.dart';
-import 'package:uber/views/ViewMotorista.dart';
-import 'package:uber/views/ViewPassageiro.dart';
-import 'package:uber/views/ViewCorrida.dart';
+import 'package:uber/app/module/splash_screen_module/SplashScreen.dart';
+import 'package:uber/app/module/register_module/register_page.dart';
+import 'package:uber/app/module/login_module/login_page.dart';
+import 'package:uber/app/module/home_module/home_module_motorista/ViewMotorista.dart';
+import 'package:uber/app/module/home_module/home_module_passageiro/home_page_passageiro.dart';
+import 'package:uber/app/module/corrida_module/view_corrida.dart';
 
 class Rotas{
 
-  static const ROUTE_HOME ="/Home";
-  static const ROUTE_CADASTRO ="/Cadstro";
-  static const ROUTE_SPLASHSCREEN = "/SplashScreen";
-  static const ROUTE_VIEWPASSAGEIRO = "/ViewPassageiro";
-  static const ROUTE_VIEWMOTORISTA = "/ViewMotorista";
-  static const ROUTE_VIEWCORRIDA  = "/ViewCorrida";
+  static const ROUTE_LOGIN ="/splash/login";
+  static const ROUTE_REGISTER ="/splash/register";
+  static const ROUTE_SPLASHSCREEN = "/splash/";
+  static const ROUTE_VIEWPASSAGEIRO = "/home-passagerio";
+  static const ROUTE_VIEWMOTORISTA = "/home-motorista";
+  static const ROUTE_VIEWCORRIDA  = "/view-corrida";
   static var args;
 
   static Route<dynamic>? getRotas(RouteSettings settings){
@@ -21,26 +21,12 @@ class Rotas{
 
     switch(settings.name){
 
-      case ROUTE_SPLASHSCREEN:
-        return MaterialPageRoute(builder: (_)=> SplashScreen());
 
-      case ROUTE_HOME:
-        return MaterialPageRoute(builder: (_)=>Home());
-        break;
-
-      case ROUTE_CADASTRO:
-        return MaterialPageRoute(builder: (_)=>Cadastro());
-        break;
-      case ROUTE_VIEWPASSAGEIRO:
-        return MaterialPageRoute(builder: (_)=>ViewPassageiro());
-        break;
       case ROUTE_VIEWMOTORISTA:
         return MaterialPageRoute(builder: (_)=>ViewMotorista());
-        break;
 
         case ROUTE_VIEWCORRIDA:
         return MaterialPageRoute(builder: (_)=>ViewCorrida(args));
-        break;
       default :_erroRota;
     }
   }
@@ -49,8 +35,8 @@ class Rotas{
      return MaterialPageRoute(
          builder: (_){
             return Scaffold(
-               appBar: AppBar(title: Text("Erro de Rota"),),
-                body: Center(
+               appBar: AppBar(title: const Text("Erro de Rota"),),
+                body: const Center(
                   child: Text("Erro ao direcionar rota"),
                 ),
             );
