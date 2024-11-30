@@ -1,4 +1,4 @@
-# Aplicativo Uber Clone Passageiiro
+# Aplicativo Uber Clone Passageiro
 
 ![Badge em Desenvolvimento](http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge)
 ![Badge em Kotlin](http://img.shields.io/static/v1?label=LENGUAGE&message=%20DART&color=BLUEN&style=for-the-badge)
@@ -8,7 +8,9 @@
 </p>
 
 ### Imagens do App
-<img src="https://github.com/user-attachments/assets/dfbdded0-05e4-433c-a1b3-5894f58028a8"  height="450em">
+<img src="https://github.com/user-attachments/assets/1eb71fb7-f2c9-4d76-bf38-92a0878187b3"  height="450em">
+<img src="https://github.com/user-attachments/assets/81e24dbf-5289-4f0c-8c7f-d83acb39432a"  height="450em">
+<img src="https://github.com/user-attachments/assets/47eb8e78-3d79-484b-8513-177efbbff6ae"  height="450em">
 
 
 ### Funcionalidades do App
