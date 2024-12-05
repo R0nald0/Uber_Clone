@@ -2,7 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uber/controller/Banco.dart';
-import 'package:uber/model/Usuario.dart';
+import 'package:uber/app/model/Usuario.dart';
 
 class UsuarioFirebase{
   static Future<User?> getFirebaseUser() async {
@@ -16,19 +16,28 @@ class UsuarioFirebase{
        User? firebaseUse = await getFirebaseUser();
       String? idUsuarioLogado =  firebaseUse?.uid;
 
-      Usuario usuario =Usuario();
-      usuario.idUsuario =idUsuarioLogado!;
-      usuario.tipoUsuario= snapshot.get("tipoUsuario");
-      usuario.nome=snapshot.get("nome");
-      usuario.email=snapshot.get("email");
+     final email=snapshot.get("email");
+     final nome=snapshot.get("nome");
+     final tipoUsuario= snapshot.get("tipoUsuario");
+     final idUsuario =idUsuarioLogado!;
 
+      Usuario usuario =Usuario(
+        idUsuario: idUsuario,
+        email: email,
+        latitude: 0,
+        longitude: 0,
+        nome: nome,
+        senha: '',
+        tipoUsuario: tipoUsuario
+      );
+    
       return usuario;
   }
   static atualizarPosicaoUsuario(String idRequisicao,String campoAtulizar,double lat ,double long) async{
 
     Usuario usuarioMot = await UsuarioFirebase.recuperarDadosPassageiro();
-     usuarioMot.latitude = lat;
-     usuarioMot.longitude = long;
+     usuarioMot.copyWith(latitude: lat);
+     usuarioMot.copyWith(longitude: long);
 
      Banco.db.collection('requisicao')
         .doc(idRequisicao)
@@ -37,7 +46,7 @@ class UsuarioFirebase{
     });
 
   }
-
+  
  static Future<DocumentSnapshot> getDadosRequisicao(id) async {
     DocumentSnapshot snapshot = await Banco.db.collection("requisicao").doc(id).get();
     return snapshot;
