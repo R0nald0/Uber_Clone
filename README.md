@@ -6,6 +6,7 @@
 <p>
   Aplicativo desenvolvido em Dart/Flutter utilizando uma arquitetura modular. Permite ao usuário solicitar viagens de carro ou moto, exibir o trajeto no mapa com informações detalhadas como localização em tempo real, valor estimado, distância e duração da viagem, tudo antes da confirmação.
 </p>
+#### atualização do app esta na branch atualizacao_app.
 
 ### Imagens do App
 <img src="https://github.com/user-attachments/assets/1eb71fb7-f2c9-4d76-bf38-92a0878187b3"  height="450em">
