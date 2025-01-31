@@ -6,7 +6,7 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart' as lotiie;
 import 'package:mobx/mobx.dart';
 import 'package:uber/app/model/Marcador.dart';
 import 'package:uber/app/model/Requisicao.dart';
@@ -17,6 +17,7 @@ import 'package:uber/app/module/home_module/home_module_passageiro/home_passagei
 import 'package:uber/app/util/Status.dart';
 import 'package:uber/app/util/UsuarioFirebase.dart';
 import 'package:uber/controller/Banco.dart';
+import 'package:uber/core/constants/uber_clone_contstants.dart';
 import 'package:uber/core/mixins/dialog_loader/dialog_loader.dart';
 import 'package:uber/core/widgets/uber_text_fields/uber_auto_completer_text_field.dart';
 import 'package:validatorless/validatorless.dart';
@@ -29,26 +30,27 @@ class HomePassageiroPage extends StatefulWidget {
   const HomePassageiroPage({super.key, required this.homePassageiroController});
 
   @override
-  State<StatefulWidget> createState() => HomePassageiroPageState();
+  State<StatefulWidget> createState() => HomePassageiroPageState() ;
 }
 
 class HomePassageiroPageState extends State<HomePassageiroPage>
     with DialogLoader {
   final disposerReactions = <ReactionDisposer>[];
+  var address = <Address>[];
+
   CameraPosition positionCan =
       const CameraPosition(target: LatLng(-13.008864, -38.528722), zoom: 12);
   final Set<Marker> _marcador = {};
   late BitmapDescriptor imgPassageiro;
-  final _controllerDestino = TextEditingController();
-  final _controllerMyLocal = TextEditingController();
+ 
   final formKey = GlobalKey<FormState>();
   List<String> listMenu = ["Configuraçoes", "Deslogar"];
-  // late StreamSubscription<DocumentSnapshot> streamSubscription ;
+  late StreamSubscription<DocumentSnapshot> streamSubscription;
 
   //DADOS Passageiro
   String meuLoca = "";
-  Addres? meuLocal;
-  Addres? meuDestino;
+  Address? meuLocal;
+  Address? meuDestino;
 
   late Position _localPassageiros;
   late Position _localMotorista;
@@ -137,7 +139,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
             ));
   }
 
-  criarDialg(Addres destino, context, String valorDaCorrida) {
+  criarDialg(Address destino, context, String valorDaCorrida) {
     return showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -147,7 +149,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                 children: <Widget>[
                   Text(
                       "Cidade :${destino.cidade}\n"
-                      "Bairro :${destino.bairo}\n"
+                      "Bairro :${destino.bairro}\n"
                       "Rua : ${destino.rua},${destino.numero}\n"
                       "Cep : ${destino.cep}\n"
                       "Endereço : ${destino.nomeDestino}\n",
@@ -206,21 +208,45 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
   _statusUberNaoChamdo() {
     // _getPermissionLocation();
     _exibirCaixasDeRotas = true;
-    _alterarBotoes(const Text("Procurar Motorista"), Colors.black, () async {
-      await widget.homePassageiroController.getPermissionLocation();
+
+    _alterarBotoes(const Text("Procurar Motorista",style: TextStyle(color: Colors.white),), Colors.black, () {
+      widget.homePassageiroController.getPermissionLocation();
+      showModalBottomSheet(
+        enableDrag: true,
+        context: context,
+        builder: (contextBottom) {
+          return Observer(
+            builder: (contextBottom) {
+              return UberListTrip(
+                tripOptions: widget.homePassageiroController.trips,
+                tripSelected: widget.homePassageiroController.tripSelected,
+                onSelected: (tripSelected) {
+                  widget.homePassageiroController.selectedTrip(tripSelected);
+                },
+                onConfirmationTrip: () {
+                  widget.homePassageiroController.createRequisitionToRide();
+                  Navigator.of(context).pop();
+                },
+              );
+            },
+          );
+        },
+      );
     });
   }
 
   _statusUberAguardando() async {
     _exibirCaixasDeRotas = false;
-    _alterarBotoes(const Text("Cancelar"), Colors.red, () {
-      _cancelarUber();
+
+    _alterarBotoes(const Text("Cancelar"), Colors.red, () async {
+      await widget.homePassageiroController.cancelarUber();
     });
 
-    getLocationUser();
-    DocumentSnapshot snapshot =
+    // getLocationUser();
+    widget.homePassageiroController.updatePositionUser();
+    /* DocumentSnapshot snapshot =
         await Banco.db.collection('requisicao').doc(_idRequisicao).get();
-    _dadosRequisicaoPassageiro = snapshot.get('passageiro');
+       _dadosRequisicaoPassageiro = snapshot.get('passageiro');
 
     double latPass = _dadosRequisicaoPassageiro['latitude'];
     double longPass = _dadosRequisicaoPassageiro['longitude'];
@@ -236,7 +262,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
         heading: 0,
         speed: 0,
         speedAccuracy: 0);
-    _addMarcador(_localPassageiros, 'passageiro', 'Meu local');
+    _addMarcador(_localPassageiros, 'passageiro', 'Meu local'); */
   }
 
   _statusAcaminho() async {
@@ -341,14 +367,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     _statusUberNaoChamdo();
   }
 
-  _recuperarDadosPassageiro() async {
-    /*  User? user = await UsuarioFirebase.getFirebaseUser();
-    if (user != null) {
-      idUser = user.uid.toString();
-      _verificarRequisicaoAtiva();
-    } */
-  }
-  initReaction() {
+  void initReaction() {
     widget.homePassageiroController.getDataUSerOn();
     final userReaction = reaction<Usuario?>(
         (_) => widget.homePassageiroController.usuario, (usuario) async {
@@ -367,6 +386,12 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
         (_) => widget.homePassageiroController.requisicao, (requisicao) {
       if (requisicao == null || requisicao.id == null) {
         _statusUberNaoChamdo();
+      } else {
+        _idRequisicao = requisicao.id!;
+        widget.homePassageiroController.showAllPositionsAndTraceRouter();
+        verifyTripState(requisicao.status);
+        widget.homePassageiroController.getActiveTripData(requisicao);
+        //  _listenerRequisicao(_idRequisicao);
       }
     });
 
@@ -381,23 +406,33 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     final locationPermissionReaction = reaction<LocationPermission?>(
         (_) => widget.homePassageiroController.locationPermission,
         (permission) {
+          showLoaderDialog();
       if (permission == LocationPermission.denied) {
         dialogLocationPermissionDenied(() {
+    
           widget.homePassageiroController.getPermissionLocation();
+          
         });
       } else if (permission == LocationPermission.deniedForever) {
         dialogLocationPermissionDeniedForeve(() {
           Geolocator.openAppSettings();
         });
       }
+      hideLoader();
     });
+
+    /* final stateTripReaction = reaction<String>(
+        (_) => widget.homePassageiroController.statusTrip, (stateTrip) {
+         verifyTripState(stateTrip);
+    }); */
 
     disposerReactions.addAll([
       erroReaction,
       userReaction,
       requicaoReaction,
       serviceEnableReaction,
-      locationPermissionReaction
+      locationPermissionReaction,
+     
     ]);
   }
 
@@ -405,8 +440,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
   void initState() {
     super.initState();
     widget.homePassageiroController.getCameraUserLocationPosition();
+    widget.homePassageiroController.getUserAddress();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _recuperarDadosPassageiro();
       initReaction();
     });
   }
@@ -419,7 +454,9 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
           actions: <Widget>[
             IconButton(
                 onPressed: () async {
+                  showLoaderDialog();
                   await widget.homePassageiroController.getPermissionLocation();
+                  hideLoader();
                   // meuLoca = ;
                 },
                 icon: const Icon(Icons.my_location)),
@@ -491,6 +528,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                                       widget.homePassageiroController
                                           .setNameMyLocal(myActualAddrees);
                                     },
+                                    lastAddress: widget
+                                        .homePassageiroController.addresList,
                                   );
                                 }),
                                 Padding(
@@ -518,6 +557,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                                             .setDestinationLocal(
                                                 destinationAddres);
                                       },
+                                      lastAddress: widget
+                                          .homePassageiroController.addresList,
                                     );
                                   }),
                                 )
@@ -528,30 +569,33 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                   ),
                 ),
               ),
+              widget.homePassageiroController.requisicao?.status == Status.AGUARDANDO
+              ?Center(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  width: MediaQuery.of(context).size.width / 1.3,
+                  height: MediaQuery.of(context).size.height /5,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(32)
+                  ),
+                  child: Column(
+                    children: [
+                      Text('Buscando Motorista',
+                      style: Theme.of(context).textTheme.titleMedium
+                      ),
+                      
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height /7.5,
+                        child: lotiie.Lottie.asset(UberCloneConstants.LOTTI_ASSET_FIND_DRIVER)
+                        )
+                    ],
+                  ),
+                ),
+              )
+              :const SizedBox.shrink(),
               UberButtonElevated(
-                  formKey: formKey,
-                  functionPadrao: () {
-              
-                    showModalBottomSheet(
-                      enableDrag: true,
-                      context: context,
-                      builder: (contextBottom) {
-                        return Observer(
-                          builder: (contextBottom) {
-                            return UberListTrip(
-                                tripOptions:
-                                    widget.homePassageiroController.trips,
-                                tripSelected: widget
-                                    .homePassageiroController.tripSelected,
-                                onSelected: (tripSelected) {
-                                  widget.homePassageiroController
-                                      .selectedTrip(tripSelected);
-                                });
-                          },
-                        );
-                      },
-                    ); 
-                  },
+                  functionPadrao: () => _functionPadrao(),
                   textoPadrao: _textoBotaoPadrao,
                   corDoBotaoPadrao: _corBotaoPadrao),
             ],
@@ -563,11 +607,10 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     LocationSettings locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high, distanceFilter: 5);
 
-    StreamSubscription<Position> positionSt =
-        await Geolocator.getPositionStream(
+    StreamSubscription<Position> positionSt = Geolocator.getPositionStream(
       locationSettings: locationSettings,
     ).listen((Position position) {
-      if (_idRequisicao != null && _idRequisicao.isNotEmpty) {
+      if (_idRequisicao.isNotEmpty) {
         UsuarioFirebase.atualizarPosicaoUsuario(
             _idRequisicao, 'passageiro', position.latitude, position.longitude);
       } else {
@@ -580,7 +623,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     List<Placemark> placemarkLocal =
         await placemarkFromCoordinates(latitude, longitud);
 
-    if (placemarkLocal != null && placemarkLocal != 0) {
+    if (placemarkLocal != 0) {
+      //TODO remover este campo
       Placemark local = placemarkLocal[0];
       setState(() {
         meuLoca = "${local.subLocality},"
@@ -592,7 +636,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     }
   }
 
-  _salvarRequisicao(Addres destino, String valorFinalCorrida) async {
+  _salvarRequisicao(Address destino, String valorFinalCorrida) async {
     Usuario usuario = await UsuarioFirebase.recuperarDadosPassageiro();
 
     usuario.copyWith(latitude: _localPassageiros.latitude);
@@ -610,7 +654,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     Banco.db
         .collection("requisicao")
         .doc(requisicao.id)
-        .set(requisicao.toMap());
+        .set(requisicao.dadosPassageiroToMap());
 
     setState(() {
       if (requisicao.id != null) {
@@ -648,7 +692,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
   }
 
   /* _listenerRequisicao(String idRequisicao) async {
-     streamSubscription =await Banco.db
+     streamSubscription = Banco.db
         .collection("requisicao")
         .doc(idRequisicao)
         .snapshots()
@@ -656,55 +700,40 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
       if (snapshot.data != null) {
         String status = snapshot["status"];
 
-        switch (status) {
-          case Status.AGUARDANDO:
-            _statusUberAguardando();
-
-            break;
-
-          case Status.A_CAMINHO:
-            _statusAcaminho();
-            break;
-
-          case Status.EM_VIAGEM:
-            _statusEmViagem();
-            break;
-
-          case Status.FINALIZADO:
-            _statusFinalizado();
-            break;
-            case Status.CONFIRMADA:
-            _statusUberConfirmado();
-            break;
-
-          case Status.CANCELADA:
-            print("status - " + status);
-            _statusUberNaoChamdo();
-            break;
-        }
+        verifyTripState(status);
       }
     });
+  } */
+
+  void verifyTripState(String status) {
+    switch (status) {
+      case Status.AGUARDANDO:
+        _statusUberAguardando();
+        break;
+
+      case Status.A_CAMINHO:
+        _statusAcaminho();
+        break;
+
+      case Status.EM_VIAGEM:
+        _statusEmViagem();
+        break;
+
+      case Status.FINALIZADO:
+        _statusFinalizado();
+        break;
+      case Status.CONFIRMADA:
+        _statusUberConfirmado();
+        break;
+
+      case Status.CANCELADA:
+        print("status - $status");
+        _statusUberNaoChamdo();
+        break;
+    }
   }
- */
 
-  _cancelarUber() async {
-    await Banco.db
-        .collection("requisicao-ativa")
-        .doc(idUser)
-        .update({"status": Status.CANCELADA});
-    await Banco.db
-        .collection("requisicao")
-        .doc(_idRequisicao)
-        .update({"status": Status.CANCELADA}).then((_) {
-      Banco.db.collection("requisicao-ativa").doc(idUser).delete();
-    });
-
-    /*  if(streamSubscription != null){
-          streamSubscription.cancel();
-    } */
-  }
-
-  _chamarUber() async {
+ /*  _chamarUber() async {
     String destino = _controllerDestino.text;
     if (destino.isNotEmpty) {
       List<Location> locationList = await locationFromAddress(destino);
@@ -715,9 +744,9 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
         Placemark placemark = placemarkList[0];
         print("location " + placemark.toString());
 
-        final destino = Addres(
+        final destino = Address(
             nomeDestino: placemark.name.toString(),
-            bairo: placemark.subLocality.toString(),
+            bairro: placemark.subLocality.toString(),
             cep: placemark.postalCode.toString(),
             cidade: placemark.subAdministrativeArea.toString(),
             numero: placemark.subThoroughfare.toString(),
@@ -725,7 +754,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
             latitude: location.latitude,
             longitude: location.longitude);
 
-      /*   String custoCorrida = await _calcularValorVieagem(
+        /*   String custoCorrida = await _calcularValorVieagem(
             _localPassageiros.latitude,
             _localPassageiros.longitude,
             destino.latitude,
@@ -734,7 +763,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
         criarDialg(destino, context, "custoCorrida");
       }
     }
-  }
+  } */
 
   _confirmarValor() async {
     /* if(streamSubscription != null){
@@ -745,18 +774,13 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     } */
   }
 
- 
-
-  
-
   @override
   void dispose() {
     for (var reaction in disposerReactions) {
       reaction();
     }
-    _controllerDestino.dispose();
-    _controllerMyLocal.dispose();
+  
+    widget.homePassageiroController.dispose();
     super.dispose();
-    //  streamSubscription.cancel();
   }
 }

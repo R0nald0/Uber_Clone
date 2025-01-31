@@ -9,7 +9,7 @@ class MapsCameraService {
       controllerCamera.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
    } 
    
-   moverCameraBound( Addres origem, Addres destino,double padding, Completer<GoogleMapController> controller) async {
+   moverCameraBound( Address origem, Address destino,double padding, Completer<GoogleMapController> controller) async {
      
     double motLatitude = origem.latitude;
     double motLongitude = origem.longitude;

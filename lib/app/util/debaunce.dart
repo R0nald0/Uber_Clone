@@ -11,6 +11,7 @@ class Debaunce {
     if (_timer != null) {
         _timer!.cancel();
     }
+    
     _timer  = Timer(Duration(milliseconds: milliseconds), action);
   }
  

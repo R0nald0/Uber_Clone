@@ -32,7 +32,7 @@ class ViewCorrida extends StatefulWidget{
 class ViewCorridaState extends State<ViewCorrida> {
 
   final Completer<GoogleMapController> _comtroler = Completer();
-  CameraPosition _cameraPositionViagem =CameraPosition(
+  CameraPosition _cameraPositionViagem =const CameraPosition(
       target:LatLng(-13.001478,-38.499390),
   );
   late StreamSubscription<DocumentSnapshot> streamSubscription;
@@ -43,7 +43,7 @@ class ViewCorridaState extends State<ViewCorrida> {
 
   //CONFIGURACAO TELA
   late String _txBotaoPadrao ="";
-  late Color _corPadrao =Color( 0xffa9a9a9);
+  late Color _corPadrao =const Color( 0xffa9a9a9);
   late Function _funcaoPadrao = _aceitarCorrida();
   late Position localMotorista  ;
 
@@ -79,47 +79,40 @@ class ViewCorridaState extends State<ViewCorrida> {
   }
 
   _getLastPosition() async{
-    LocationSettings locationSettings = LocationSettings(accuracy: LocationAccuracy.high,distanceFilter: 10);
+    LocationSettings locationSettings = const LocationSettings(accuracy: LocationAccuracy.high,distanceFilter: 10);
 
-    StreamSubscription<Position> positions= await Geolocator.getPositionStream(
+    StreamSubscription<Position> positions= Geolocator.getPositionStream(
        locationSettings: locationSettings,
     ).listen((Position position) {
 
-      if(position != null){
-
-        setState(() {
-          _cameraPositionViagem=CameraPosition(
-              target:LatLng(position.latitude,position.longitude)
-              ,zoom:18
-          );
-          localMotorista = position;
-           _addMarcador(position, 'motorista', 'Meu local');
-          _moverCamera(_cameraPositionViagem);
+      setState(() {
+        _cameraPositionViagem=CameraPosition(
+            target:LatLng(position.latitude,position.longitude)
+            ,zoom:18
+        );
+        localMotorista = position;
+         _addMarcador(position, 'motorista', 'Meu local');
+        _moverCamera(_cameraPositionViagem);
+      });
         });
-      }
-    });
 
   }
 
   _getPosition()async{
-     LocationSettings settings = LocationSettings(
+     LocationSettings settings = const LocationSettings(
        accuracy: LocationAccuracy.high,
        distanceFilter: 5
      );
 
-     StreamSubscription<Position> positionSt = await Geolocator.getPositionStream(locationSettings: settings)
+     StreamSubscription<Position> positionSt = Geolocator.getPositionStream(locationSettings: settings)
     .listen((Position position) {
-              if(position != null){
-                UsuarioFirebase.atualizarPosicaoUsuario(
-                    widget.idRequisicao,
-                    "motorista",
-                    position.latitude,
-                    position.longitude);
+              UsuarioFirebase.atualizarPosicaoUsuario(
+                  widget.idRequisicao,
+                  "motorista",
+                  position.latitude,
+                  position.longitude);
 
-              }else{
-                localMotorista = position;
-              }
-
+            
      });
 
   }
@@ -151,7 +144,7 @@ class ViewCorridaState extends State<ViewCorrida> {
   }
 
   _statusUberAguadando() async {
-     status ="${nomePassageiro} - Aguardando ";
+     status ="$nomePassageiro - Aguardando ";
     _alterarBotoes(
         "Aceitar Corrida", Colors.green , (){_aceitarCorrida();});
      recuperarDadosRequisicao();
@@ -169,7 +162,7 @@ class ViewCorridaState extends State<ViewCorrida> {
       _dadosRequisicaoPassageiro=dados.get("passageiro");
        nomePassageiro =_dadosRequisicaoPassageiro['nome'];
 
-       status="A Caminho de ${nomePassageiro}";
+       status="A Caminho de $nomePassageiro";
 
       double mLat  = _dadosRequisicaoMotorista['latitude'];
       double mLong = _dadosRequisicaoMotorista['longitude'];
@@ -249,17 +242,15 @@ class ViewCorridaState extends State<ViewCorrida> {
     _moverCamera(_cameraPositionViagem);
 
     String custo =  snapshot['valorCorrida'];
-    status ="Confirme o Valor R\$ ${custo}" ;
-    _alterarBotoes("Confirmar Valor - R\$ ${custo}", Colors.green, (){confirmarValor();});
+    status ="Confirme o Valor R\$ $custo" ;
+    _alterarBotoes("Confirmar Valor - R\$ $custo", Colors.green, (){confirmarValor();});
   }
 
   _stausConfirmado(){
-       if(streamSubscription != null){
-         _dadosRequisicaoPassageiro={};
-         _dadosRequisicaoDestino = {};
-         streamSubscription.cancel();
-       }
-
+       _dadosRequisicaoPassageiro={};
+       _dadosRequisicaoDestino = {};
+       streamSubscription.cancel();
+     
   }
 
   @override
@@ -276,7 +267,7 @@ class ViewCorridaState extends State<ViewCorrida> {
         title: Text( status),
       ),
       body: Container(
-        padding: EdgeInsets.all(2),
+        padding: const EdgeInsets.all(2),
         child: Stack(
           children: <Widget>[
             GoogleMap(
@@ -288,14 +279,14 @@ class ViewCorridaState extends State<ViewCorrida> {
             Positioned(
               bottom: 20, left: 0,right: 0,
                child: Padding(
-                 padding: EdgeInsets.only(left: 60,right: 60),
+                 padding: const EdgeInsets.only(left: 60,right: 60),
                    child: ElevatedButton(
                      style: ElevatedButton.styleFrom(
                          backgroundColor: _corPadrao,
                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                       textStyle: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
+                       textStyle: const TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
                        elevation: 5,
-                       padding: EdgeInsets.fromLTRB(32, 16, 32, 16)
+                       padding: const EdgeInsets.fromLTRB(32, 16, 32, 16)
                      ),
                      onPressed: () { _funcaoPadrao(); },
                      child:Text(_txBotaoPadrao) ,
@@ -346,7 +337,7 @@ class ViewCorridaState extends State<ViewCorrida> {
         speed: 0,
         speedAccuracy: 0
     ) ;
-   Position _localDestino = Position(longitude:destionoLong, latitude: destinoLat,
+   Position localDestino = Position(longitude:destionoLong, latitude: destinoLat,
      altitudeAccuracy: 0,
      headingAccuracy: 0,
         timestamp: DateTime.now(),
@@ -365,14 +356,14 @@ class ViewCorridaState extends State<ViewCorrida> {
     );
 
      _addMarcador(localOrigem,marcadorOrigem.Caminho,marcadorOrigem.titulo);
-     _addMarcador(_localDestino,marcadorDestino.Caminho,marcadorDestino.titulo);
+     _addMarcador(localDestino,marcadorDestino.Caminho,marcadorDestino.titulo);
   }
 
   _addMarcador(Position position,String caminho,String titulo) async {
 
        await BitmapDescriptor.fromAssetImage(
-           ImageConfiguration(size: Size(48,48) ) ,
-           "images/${caminho}.png").then((icon){
+           const ImageConfiguration(size: Size(48,48) ) ,
+           "images/$caminho.png").then((icon){
          setState(() {
            gerarMarcador(position,icon ,titulo,caminho);
          });
@@ -446,7 +437,7 @@ class ViewCorridaState extends State<ViewCorrida> {
 
   listenerStatusRequisiscao( ) async {
          
-     streamSubscription = await Banco.db.collection("requisicao").doc(widget.idRequisicao)
+     streamSubscription = Banco.db.collection("requisicao").doc(widget.idRequisicao)
           .snapshots()
           .listen((snapshot) {
               if(snapshot.data() != null){
@@ -526,7 +517,7 @@ class ViewCorridaState extends State<ViewCorrida> {
     });
     DocumentSnapshot snapshot = await UsuarioFirebase.getDadosRequisicao(widget.idRequisicao);
      String idPass =snapshot['passageiro']['idUsuario'];
-     print("teste " + idPass.toString());
+     print("teste $idPass");
       Banco.db.collection('requisicao-ativa').doc(idPass).delete();
 
     String idMoto = snapshot['motorista']['idUsuario'];

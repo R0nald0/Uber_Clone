@@ -1,14 +1,14 @@
 part of '../home_page_passageiro.dart';
 
 class UberButtonElevated extends StatelessWidget {
-  final GlobalKey<FormState> formKey;
+
   final VoidCallback functionPadrao;
   final Widget textoPadrao;
   final Color corDoBotaoPadrao;
 
   const UberButtonElevated(
       {super.key,
-      required this.formKey,
+     
       required this.functionPadrao,
       required this.textoPadrao,
       required this.corDoBotaoPadrao});
@@ -28,13 +28,8 @@ class UberButtonElevated extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
               textStyle:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          onPressed: () {
-            final formValid = formKey.currentState?.validate() ?? false;
-            if (formValid) {
-              functionPadrao();
-            }
-          },
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: Colors.white)),
+          onPressed: () {functionPadrao();},
           child: textoPadrao,
         ),
       ),

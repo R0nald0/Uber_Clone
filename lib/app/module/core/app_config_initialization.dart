@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AppConfigInitialization {
-     
-   
     Future<void> loadConfig()async {
     WidgetsFlutterBinding.ensureInitialized();
        await _configFirebase();
@@ -15,7 +13,6 @@ class AppConfigInitialization {
 }
 
 Future<void> _configFirebase() async{
-   
    await Firebase.initializeApp();
 }
 Future<void> _loadEnvs() async {

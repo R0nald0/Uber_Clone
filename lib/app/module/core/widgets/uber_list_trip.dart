@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:uber/app/model/trip.dart';
     
+typedef OnConfirmationTrip = void Function()?;    
 class UberListTrip extends StatelessWidget {
   final  List<Trip> tripOptions;
   final Trip? tripSelected;
   final  Function(Trip) onSelected;
+  final OnConfirmationTrip onConfirmationTrip;
 
-  const UberListTrip({ super.key,required this.tripOptions,required this.tripSelected,required this.onSelected });
+  const UberListTrip({ super.key,required this.tripOptions,required this.tripSelected,
+  required this.onSelected ,
+  required this.onConfirmationTrip
+  
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -66,7 +72,7 @@ class UberListTrip extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 30, vertical: 12),
                       ),
-                      onPressed: () {},
+                      onPressed: onConfirmationTrip,
                       child: const Text(
                         'Confirmar Viagem',
                         style: TextStyle(color: Colors.white),

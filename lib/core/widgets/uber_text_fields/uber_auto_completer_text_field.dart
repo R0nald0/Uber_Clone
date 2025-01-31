@@ -1,10 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:uber/app/model/addres.dart';
-import 'package:uber/app/util/debaunce.dart';
 import 'package:uber/core/widgets/uber_text_fields/uber_text_field_widget.dart';
 
-typedef OnSelectedAddres = void Function(Addres)?;
+typedef OnSelectedAddres = void Function(Address)?;
 typedef GetAddresCallSuggestion = Function(String);
 
 class UberAutoCompleterTextField extends StatefulWidget {
@@ -14,6 +15,8 @@ class UberAutoCompleterTextField extends StatefulWidget {
   final String? hintText;
   final Icon? prefIcon;
   final FormFieldValidator<String>? validator;
+  final VoidCallback? hasFocus;
+  final List<Address> lastAddress;
 
   const UberAutoCompleterTextField(
       {super.key,
@@ -22,51 +25,76 @@ class UberAutoCompleterTextField extends StatefulWidget {
       required this.labalText,
       required this.prefIcon,
       this.validator,
-      this.hintText});
+      this.hintText,
+      this.hasFocus,
+      required this.lastAddress});
 
   @override
-  State<UberAutoCompleterTextField> createState() => _UberAutoCompleterTextFieldState();
+  State<UberAutoCompleterTextField> createState() =>
+      _UberAutoCompleterTextFieldState();
 }
 
-class _UberAutoCompleterTextFieldState extends State<UberAutoCompleterTextField> {
-   var  addresNameSelceted = '';
-  final debauncee = Debaunce(milliseconds: 1000);
+class _UberAutoCompleterTextFieldState
+    extends State<UberAutoCompleterTextField> {
+  var addresNameSelceted = '';
 
-  
+ 
+
   @override
   void initState() {
     if (widget.hintText != null) {
-        addresNameSelceted = widget.hintText ?? '';
+      addresNameSelceted = widget.hintText ?? '';
     }
-    
+
     super.initState();
-  } 
+  }
 
   @override
   Widget build(BuildContext context) {
-    return TypeAheadField<Addres>(
-      itemBuilder: itemBuilder,
+    return TypeAheadField<Address>(
+      debounceDuration: const Duration(seconds: 2),
+      itemBuilder: itemAddressSearch,
       onSelected: onSelected,
-      suggestionsCallback: (search) async {
-           var sugestions  = <Addres>[];
-           sugestions = await widget.getAddresCallSuggestion(search);
-           debauncee.run(() async {
-            sugestions = await widget.getAddresCallSuggestion(search);
-          
-            }
+      emptyBuilder: (context) {
+        return widget.lastAddress.isEmpty
+            ? const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  "Nenhum Endereço encontrado",
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+              )
+            : ListView.builder(
+              shrinkWrap: true,
+              itemCount: widget.lastAddress.length,
+              itemBuilder: (context, index) {
+                final addres = widget.lastAddress[index];
+                return ListTile(
+                  onTap: () {
+                    onSelected(addres);
+                  },
+                  leading: const Icon(Icons.location_on),
+                  title: Text(addres.nomeDestino),
+                );
+              },
             );
-         return sugestions;
-        },
+      },
+      suggestionsCallback: suggestionsCallBack,
       builder: (context, controller, focusNode) {
-           controller.text = addresNameSelceted;
+        controller.text = addresNameSelceted;
+
         return UberTextFieldWidget(
           controller: controller,
           focosNode: focusNode,
-          onChange: (value )async {
-            addresNameSelceted =value;
+          onChange: (value) {
+                 addresNameSelceted = value;
           },
-          prefixIcon:widget.prefIcon,
-         
+          suffiWidget: controller.text.isNotEmpty
+              ? IconButton(onPressed: () {
+                 controller.text = '';
+              }, icon: const Icon(Icons.clear))
+              : null,
+          prefixIcon: widget.prefIcon,
           label: widget.labalText,
           validator: widget.validator,
           inputType: TextInputType.streetAddress,
@@ -75,15 +103,26 @@ class _UberAutoCompleterTextFieldState extends State<UberAutoCompleterTextField>
     );
   }
 
-  void onSelected(Addres? addres) {
-     if (addres != null) {
-        addresNameSelceted = addres.nomeDestino;
-  
-        widget.onSelcetedAddes!(addres);
-     }
+  FutureOr<List<Address>?> suggestionsCallBack(String search) async {
+    
+    if(search.isNotEmpty){
+          var sugestions = <Address>[];
+          sugestions = await widget.getAddresCallSuggestion(search);
+           return sugestions;
+    }
+
+    return <Address>[];
   }
 
-  Widget itemBuilder(context, Addres addres) {
+  void onSelected(Address? addres) {  
+
+    if (addres != null ) {
+       addresNameSelceted = addres.nomeDestino;
+       widget.onSelcetedAddes!(addres);
+    }
+  }
+
+  Widget itemAddressSearch(context, Address addres) {
     return ListTile(
       leading: const Icon(Icons.location_on),
       title: Text(addres.nomeDestino),

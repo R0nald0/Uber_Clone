@@ -65,7 +65,12 @@ mixin DialogLoader<e extends StatefulWidget> on State<e> {
   }
 
   void callSnackBar(String erro) {
-    final snackBar = SnackBar(content: Text(erro));
+    final snackBar = SnackBar(content: Text(erro),backgroundColor: Colors.red,);
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+   void callInfoSnackBar(String info) {
+    final snackBar = SnackBar(content: Text(info),backgroundColor: Colors.black,);
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 

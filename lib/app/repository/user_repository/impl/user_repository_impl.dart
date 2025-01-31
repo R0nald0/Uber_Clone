@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uber/app/model/Usuario.dart';
 import 'package:uber/app/repository/user_repository/i_user_repository.dart';
@@ -23,7 +22,9 @@ class UserRepositoryImpl implements IUserRepository {
   @override
   Future<Usuario> getDataUserOn(String idUser) async {
     try {
-     final isUsedLocal = await _localStorage.containsKey(UberCloneConstants.KEY_PREFERENCE_USER);
+
+       final isUsedLocal = await _localStorage.containsKey(UberCloneConstants.KEY_PREFERENCE_USER);
+
       if (isUsedLocal) {
          final user = await _localStorage.read<String>(UberCloneConstants.KEY_PREFERENCE_USER); 
          return  Usuario.fromJson(user!);

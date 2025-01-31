@@ -8,6 +8,8 @@ import '../../../../Rotas.dart';
 import '../../../../controller/Banco.dart';
 
 class ViewMotorista extends StatefulWidget{
+  const ViewMotorista({super.key});
+
   @override
   State<StatefulWidget> createState() =>ViewMotoristaState();
 }
@@ -53,7 +55,9 @@ class ViewMotoristaState extends State<ViewMotorista>{
        String idMotorista = user.uid.toString();
 
         DocumentSnapshot snapshot = await Banco.db.collection("requisicao-ativa-motorista")
-            .doc(idMotorista).get().then((user) async{
+            .doc(idMotorista)
+            .get()
+            .then((user) async{
 
               if(mounted){
                 if(user.data() != null ){
@@ -66,7 +70,7 @@ class ViewMotoristaState extends State<ViewMotorista>{
               }
               return user;
         }).catchError((onError){
-            print("dados " + onError.toString() );
+            print("dados $onError" );
         });
 
     }
@@ -88,15 +92,15 @@ class ViewMotoristaState extends State<ViewMotorista>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Motorista"),
+        title: const Text("Motorista"),
         actions: [
           PopupMenuButton<String>(
               onSelected: _escolhaItem,
               itemBuilder: (context)=>
                   listItens.map((String item){
                 return PopupMenuItem(
+                    value: item,
                     child:Text(item),
-                   value: item,
                 );
               }).toList()
           )
@@ -109,26 +113,26 @@ class ViewMotoristaState extends State<ViewMotorista>{
            switch(snapshot.connectionState){
              case ConnectionState.none:
              case ConnectionState.waiting:
-               return Center(
+               return const Center(
                  child: CircularProgressIndicator(color: Colors.black),
                );
 
              case ConnectionState.active:
              case ConnectionState.done:
                 if(snapshot.hasError){
-                    return Text("Erro ao carregar a Lista de Requisiçoes");
+                    return const Text("Erro ao carregar a Lista de Requisiçoes");
                 }else{
                     if(snapshot.hasData){
                        QuerySnapshot querySnapshot = snapshot.data;
-                       if(querySnapshot.docs.length == 0 ){
-                         return  Center(child: Text("Nenhuma Viagem disponível"));
+                       if(querySnapshot.docs.isEmpty ){
+                         return  const Center(child: Text("Nenhuma Viagem disponível"));
                        }else{
                            return _listarRequisicoes(querySnapshot);
                        }
                     }
                 }
            }
-          return Center();
+          return const Center();
         },
       ),
     );
@@ -136,11 +140,11 @@ class ViewMotoristaState extends State<ViewMotorista>{
 
   _listarRequisicoes(QuerySnapshot querySnapshot){
       return Container(
-        padding: EdgeInsets.all(2),
+        padding: const EdgeInsets.all(2),
          child: Expanded(
            child: ListView.builder(
                 itemCount: querySnapshot.docs.length,
-               itemBuilder: (context,index){
+                itemBuilder: (context,index){
                   List<DocumentSnapshot> requisicoes = querySnapshot.docs.toList();
                    DocumentSnapshot requisicao = requisicoes[index];
 
@@ -148,13 +152,13 @@ class ViewMotoristaState extends State<ViewMotorista>{
                    shadowColor: Colors.black,
                    child: ListTile(
                      title: Row(children:<Widget>[
-                       Text("Passageiro :",style: TextStyle(fontSize: 18,fontWeight:FontWeight.bold)),
+                       const Text("Passageiro :",style: TextStyle(fontSize: 18,fontWeight:FontWeight.bold)),
                        Text(requisicao['passageiro']['nome'])
                      ],),
 
                      subtitle: Row(children:<Widget>[
-                       Text("Destino :",style: TextStyle(fontSize: 15,fontWeight:FontWeight.bold)),
-                       Text("${requisicao['destino']['rua']},${requisicao["destino"]['bairro']}",style: TextStyle(fontSize: 15))
+                       const Text("Destino :",style: TextStyle(fontSize: 15,fontWeight:FontWeight.bold)),
+                       Text("${requisicao['destino']['rua']},${requisicao["destino"]['bairro']}",style: const TextStyle(fontSize: 15))
                      ],),
                      onTap: (){
                         Navigator.pushNamed(context, Rotas.ROUTE_VIEWCORRIDA,arguments: requisicao.id);

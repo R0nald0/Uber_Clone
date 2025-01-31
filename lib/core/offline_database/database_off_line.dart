@@ -1,10 +1,11 @@
 import 'package:uber/app/model/Usuario.dart';
 
 abstract class DatabaseOffLine {
+   
 
-  Future<int> save(Usuario usuario);
+  Future<int> save(String query,List<Object?>? arguments);
   Future<Usuario> update(Usuario usuario);
-  Future<Usuario> getUserData();
+   Future<List<Map<String, Object?>>> getUserData(String tableName);
   Future<void> delete(Usuario usuario);
 
 }

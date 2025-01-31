@@ -7,28 +7,25 @@ import 'package:uber/core/mixins/dialog_loader/dialog_loader.dart';
 class SplashScreen extends StatefulWidget {
   final AuthenticationController _auth;
 
-  const SplashScreen(
-      {super.key, required AuthenticationController authController})
-      : _auth = authController;
+  const SplashScreen({super.key, required AuthenticationController auth})
+      : _auth = auth;
 
   @override
   State<StatefulWidget> createState() => SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen> with DialogLoader {
+class SplashScreenState extends State<SplashScreen>  with DialogLoader{
   late ReactionDisposer reactionDisposerAuth;
-
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      initReactions(); 
+      initReactions();
     });
-
   }
 
-  void initReactions() async {
+   void initReactions() async {
       widget._auth.verifyStateUserLogged();
   reactionDisposerAuth  =reaction<String?>((_)=>widget._auth.errorMessage, (erro){
          if (erro !=null) {
@@ -36,7 +33,7 @@ class SplashScreenState extends State<SplashScreen> with DialogLoader {
             Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_LOGIN, (_)=>false);
          }
     }); 
-  }
+  } 
 
   @override
   void dispose() {
@@ -46,31 +43,29 @@ class SplashScreenState extends State<SplashScreen> with DialogLoader {
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       body: Container(
-          padding: const EdgeInsets.all(60),
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage("images/fundo.png"), fit: BoxFit.cover),
+        padding: const EdgeInsets.all(60),
+        decoration: const BoxDecoration(
+          color: Colors.black87,
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 70,
+            children: <Widget>[
+              CircleAvatar(
+                radius: 100,
+                backgroundImage:AssetImage("images/logo.png"),
+              ),
+              LinearProgressIndicator(
+                color: Colors.blue,
+                minHeight: 2,
+              ),
+            ],
           ),
-          child: Center(
-            child: Column(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 100, bottom: 50),
-                  child: Image.asset("images/logo.png"),
-                ),
-                const LinearProgressIndicator(
-                  color: Colors.blue,
-                  minHeight: 2,
-                ),
-              ],
-            ),
-          )),
+        ),
+      ),
     );
   }
-
-
 }

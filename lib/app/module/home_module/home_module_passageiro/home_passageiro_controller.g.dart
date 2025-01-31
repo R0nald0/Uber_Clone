@@ -17,6 +17,42 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
               name: 'HomePassageiroControllerBase.isAddressNotNullOrEmpty'))
       .value;
 
+  late final _$_statusTripAtom =
+      Atom(name: 'HomePassageiroControllerBase._statusTrip', context: context);
+
+  String get statusTrip {
+    _$_statusTripAtom.reportRead();
+    return super._statusTrip;
+  }
+
+  @override
+  String get _statusTrip => statusTrip;
+
+  @override
+  set _statusTrip(String value) {
+    _$_statusTripAtom.reportWrite(value, super._statusTrip, () {
+      super._statusTrip = value;
+    });
+  }
+
+  late final _$_addresListAtom =
+      Atom(name: 'HomePassageiroControllerBase._addresList', context: context);
+
+  List<Address> get addresList {
+    _$_addresListAtom.reportRead();
+    return super._addresList;
+  }
+
+  @override
+  List<Address> get _addresList => addresList;
+
+  @override
+  set _addresList(List<Address> value) {
+    _$_addresListAtom.reportWrite(value, super._addresList, () {
+      super._addresList = value;
+    });
+  }
+
   late final _$_tripsAtom =
       Atom(name: 'HomePassageiroControllerBase._trips', context: context);
 
@@ -165,16 +201,16 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
   late final _$_myAddresAtom =
       Atom(name: 'HomePassageiroControllerBase._myAddres', context: context);
 
-  Addres? get myAddres {
+  Address? get myAddres {
     _$_myAddresAtom.reportRead();
     return super._myAddres;
   }
 
   @override
-  Addres? get _myAddres => myAddres;
+  Address? get _myAddres => myAddres;
 
   @override
-  set _myAddres(Addres? value) {
+  set _myAddres(Address? value) {
     _$_myAddresAtom.reportWrite(value, super._myAddres, () {
       super._myAddres = value;
     });
@@ -183,16 +219,16 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
   late final _$_myDestinationAtom = Atom(
       name: 'HomePassageiroControllerBase._myDestination', context: context);
 
-  Addres? get myDestination {
+  Address? get myDestination {
     _$_myDestinationAtom.reportRead();
     return super._myDestination;
   }
 
   @override
-  Addres? get _myDestination => myDestination;
+  Address? get _myDestination => myDestination;
 
   @override
-  set _myDestination(Addres? value) {
+  set _myDestination(Address? value) {
     _$_myDestinationAtom.reportWrite(value, super._myDestination, () {
       super._myDestination = value;
     });
@@ -234,6 +270,16 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
     });
   }
 
+  late final _$getCameraUserLocationPositionAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.getCameraUserLocationPosition',
+      context: context);
+
+  @override
+  Future<void> getCameraUserLocationPosition() {
+    return _$getCameraUserLocationPositionAsyncAction
+        .run(() => super.getCameraUserLocationPosition());
+  }
+
   late final _$getUserLocationAsyncAction = AsyncAction(
       'HomePassageiroControllerBase.getUserLocation',
       context: context);
@@ -248,7 +294,7 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
       context: context);
 
   @override
-  Future<void> setNameMyLocal(Addres addres) {
+  Future<void> setNameMyLocal(Address addres) {
     return _$setNameMyLocalAsyncAction.run(() => super.setNameMyLocal(addres));
   }
 
@@ -257,7 +303,7 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
       context: context);
 
   @override
-  Future<void> setDestinationLocal(Addres addres) {
+  Future<void> setDestinationLocal(Address addres) {
     return _$setDestinationLocalAsyncAction
         .run(() => super.setDestinationLocal(addres));
   }
@@ -277,7 +323,7 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
       context: context);
 
   @override
-  Future<List<Addres>> findAddresByName(String addresName) {
+  Future<List<Address>> findAddresByName(String addresName) {
     return _$findAddresByNameAsyncAction
         .run(() => super.findAddresByName(addresName));
   }
@@ -297,6 +343,25 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
   @override
   Future<void> selectedTrip(Trip trip) {
     return _$selectedTripAsyncAction.run(() => super.selectedTrip(trip));
+  }
+
+  late final _$createRequisitionToRideAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.createRequisitionToRide',
+      context: context);
+
+  @override
+  Future<void> createRequisitionToRide() {
+    return _$createRequisitionToRideAsyncAction
+        .run(() => super.createRequisitionToRide());
+  }
+
+  late final _$cancelarUberAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.cancelarUber',
+      context: context);
+
+  @override
+  Future<void> cancelarUber() {
+    return _$cancelarUberAsyncAction.run(() => super.cancelarUber());
   }
 
   @override

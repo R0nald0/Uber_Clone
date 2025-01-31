@@ -15,7 +15,8 @@ class LocalStorageImpl implements LocalStorage {
   @override
   Future<bool?> remove(String key) async {
     final preference = await _instance;
-     await preference.remove(key);
+    return  await preference.remove(key);
+    
   }
 
   @override
@@ -43,6 +44,7 @@ class LocalStorageImpl implements LocalStorage {
     return isSuccefull;
   }
 
+  @override
   Future<bool> clear() async {
     final preference = await _instance;
     return preference.clear();

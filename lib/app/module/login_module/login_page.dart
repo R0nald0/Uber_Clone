@@ -52,10 +52,7 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
     return Scaffold(
       body: Container(
           padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage("images/fundo.png"), fit: BoxFit.cover),
-          ),
+          color: Colors.black87,
           child: Center(
             child: SingleChildScrollView(
               child: Column(

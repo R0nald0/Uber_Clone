@@ -1,11 +1,14 @@
+import 'dart:convert';
+
+import 'package:flutter/widgets.dart';
+
 import 'package:uber/app/model/addres.dart';
 
 import 'Usuario.dart';
 
-
 class Requisicao {
   final String? id;
-  final Addres destino;
+  final Address destino;
   final Usuario passageiro;
   final String status;
   final Usuario? motorista;
@@ -21,7 +24,7 @@ class Requisicao {
   
   Requisicao.empty() :
     id =null,
-    destino =Addres.emptyAddres(),
+    destino =Address.emptyAddres(),
     motorista =Usuario.emptyUser(),
     passageiro =Usuario.emptyUser(),
     status ='',
@@ -29,33 +32,33 @@ class Requisicao {
     super();
 
 
-  Map<String,dynamic> toMap(){
+  Map<String,dynamic> dadosPassageiroToMap(){
 
     Map<String,dynamic> dadosPassageiro={
-      "idUsuario" :  this.passageiro.idUsuario,
-      "nome":        this.passageiro.nome,
-      "email":       this.passageiro.email,
-      "tipoUsuario": this.passageiro.tipoUsuario,
-      "latitude" :   this.passageiro.latitude,
-      "longitude" :  this.passageiro.longitude
+      "idUsuario" :  passageiro.idUsuario,
+      "nome":        passageiro.nome,
+      "email":       passageiro.email,
+      "tipoUsuario": passageiro.tipoUsuario,
+      "latitude" :   passageiro.latitude,
+      "longitude" :  passageiro.longitude
     };
 
     Map<String,dynamic> dadosDestino={
-      "rua":this.destino.rua,
-      "nomeDestino":this.destino.nomeDestino,
-      "bairro" : this.destino.bairo,
-      "cep" : this.destino.cep,
-      "cidade" :this.destino.cidade,
-      "numero" :this.destino.numero,
-      "latitude":this.destino.latitude,
-      "longitude" :this.destino.longitude
+      "rua":destino.rua,
+      "nomeDestino":destino.nomeDestino,
+      "bairro" : destino.bairro,
+      "cep" : destino.cep,
+      "cidade" :destino.cidade,
+      "numero" :destino.numero,
+      "latitude":destino.latitude,
+      "longitude" :destino.longitude
     };
 
 
     Map<String,dynamic> dadosRequisicao ={
-      "idRequisicao" :this.id,
-      "status" :this.status,
-      "valorCorrida" :this.valorCorrida,
+      "idRequisicao" :id,
+      "status" :status,
+      "valorCorrida" :valorCorrida,
       "motorista" : null,
       "passageiro": dadosPassageiro,
       "destino" :dadosDestino
@@ -63,4 +66,49 @@ class Requisicao {
 
     return dadosRequisicao;
   }
+
+
+  Requisicao copyWith({
+    ValueGetter<String?>? id,
+    Address? destino,
+    Usuario? passageiro,
+    String? status,
+    ValueGetter<Usuario?>? motorista,
+    String? valorCorrida,
+  }) {
+    return Requisicao(
+      id: id != null ? id() : this.id,
+      destino: destino ?? this.destino,
+      passageiro: passageiro ?? this.passageiro,
+      status: status ?? this.status,
+      motorista: motorista != null ? motorista() : this.motorista,
+      valorCorrida: valorCorrida ?? this.valorCorrida,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'destino': destino.toMap(),
+      'passageiro': passageiro.toMap(),
+      'status': status,
+      'motorista': motorista?.toMap(),
+      'valorCorrida': valorCorrida,
+    };
+  }
+
+  factory Requisicao.fromMap(Map<String, dynamic> map) {
+    return Requisicao(
+      id: map['id'],
+      destino: Address.fromMap(map['destino']),
+      passageiro: Usuario.fromMap(map['passageiro']),
+      status: map['status'] ?? '',
+      motorista: map['motorista'] != null ? Usuario.fromMap(map['motorista']) : null,
+      valorCorrida: map['valorCorrida'] ?? '',
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory Requisicao.fromJson(String source) => Requisicao.fromMap(json.decode(source));
 }

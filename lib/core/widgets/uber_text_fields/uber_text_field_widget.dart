@@ -6,12 +6,13 @@ class UberTextFieldWidget extends StatelessWidget {
   final TextEditingController? controller;
   final FormFieldValidator<String>? validator;
   final bool obscureText;
+  final Widget? suffiWidget ;
   final String? hintText;
   final String? label; 
   final FocusNode?  focosNode;
   final TextInputType? inputType;
   final bool autoFocos;
-  final Icon? prefixIcon;
+  final Widget? prefixIcon;
   final ValueNotifier<bool> _obscureTextVN;
   final OnChanged onChange;
 
@@ -26,7 +27,8 @@ class UberTextFieldWidget extends StatelessWidget {
     this.inputType,
     this.focosNode,
     this.autoFocos =false,
-    this.onChange
+    this.onChange,
+    this.suffiWidget
   }) : _obscureTextVN = ValueNotifier(obscureText);
 
   @override
@@ -49,6 +51,7 @@ class UberTextFieldWidget extends StatelessWidget {
                 color: Colors.amber,
               ),
               label:label != null ? Text(label!,style:const TextStyle(fontSize: 20),) : null,
+              
               suffixIcon: obscureText
                         ? IconButton(
                             onPressed: () {
@@ -58,11 +61,12 @@ class UberTextFieldWidget extends StatelessWidget {
                                 ? Icons.visibility
                                 : Icons.visibility_off),
                           )
-                        : null,
+                        : suffiWidget,
               hintText: hintText,
               filled: true,
               fillColor: Colors.white,
               prefixIcon: prefixIcon,
+               
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
             ),

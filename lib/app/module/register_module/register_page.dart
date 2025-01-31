@@ -25,7 +25,7 @@ class RegisterPageState extends State<RegisterPage> with DialogLoader{
  late ReactionDisposer errorReactionDispose;
 
 
- bool _tipoUsuario = false;
+ final bool _tipoUsuario = false;
  String erroMensagem = "";
 
   @override

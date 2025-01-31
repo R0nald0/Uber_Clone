@@ -34,7 +34,7 @@ class Banco{
         }
 
     }).catchError((erro){
-        print("erro" + erro.toString());
+        print("erro$erro");
     });
   }
 

@@ -6,7 +6,7 @@ import 'package:uber/app/model/Usuario.dart';
 
 class UsuarioFirebase{
   static Future<User?> getFirebaseUser() async {
-    return await Banco.auth.currentUser;
+    return Banco.auth.currentUser;
   }
 
   static Future<Usuario> recuperarDadosPassageiro() async{

@@ -29,6 +29,7 @@ class Rotas{
         return MaterialPageRoute(builder: (_)=>ViewCorrida(args));
       default :_erroRota;
     }
+    return null;
   }
 
   static Route<dynamic> _erroRota(){

@@ -67,6 +67,7 @@ class AuthRepositoryImpl implements IAuthRepository {
               "Erro desconhecido entre em contato com o suporte", e, s);
       }
     }
+    return null;
   }
 
   @override
@@ -103,6 +104,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     return null;
   }
 
+  @override
   String? getIdCurrenteUserUser() => _auth.currentUser!.uid;
 
   @override
