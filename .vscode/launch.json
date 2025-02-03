@@ -7,7 +7,10 @@
         {
             "name": "Uber_Clone",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "args": [
+               "--dart-define=GOOGLE_KEY=AIzaSyBe5FADCFHBE32lHvGUPeVdVL1VCZxHphc",
+            ]
         },
         {
             "name": "Uber_Clone (profile mode)",

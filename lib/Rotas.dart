@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:uber/app/module/splash_screen_module/SplashScreen.dart';
-import 'package:uber/app/module/register_module/register_page.dart';
-import 'package:uber/app/module/login_module/login_page.dart';
-import 'package:uber/app/module/home_module/home_module_motorista/ViewMotorista.dart';
-import 'package:uber/app/module/home_module/home_module_passageiro/home_page_passageiro.dart';
 import 'package:uber/app/module/corrida_module/view_corrida.dart';
 
 class Rotas{
@@ -20,10 +15,7 @@ class Rotas{
      args = settings.arguments;
 
     switch(settings.name){
-
-
-      case ROUTE_VIEWMOTORISTA:
-        return MaterialPageRoute(builder: (_)=>ViewMotorista());
+      
 
         case ROUTE_VIEWCORRIDA:
         return MaterialPageRoute(builder: (_)=>ViewCorrida(args));

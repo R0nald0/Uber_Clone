@@ -598,7 +598,7 @@ packages:
     source: hosted
     version: "0.5.10"
   google_places:
-    dependency: "direct main"
+    dependency: transitive
     description:
       path: "../google_place"
       relative: true
