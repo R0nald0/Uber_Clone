@@ -27,6 +27,24 @@ mixin _$LoginController on LoginControllerBase, Store {
     });
   }
 
+  late final _$_usuarioAtom =
+      Atom(name: 'LoginControllerBase._usuario', context: context);
+
+  String? get usuario {
+    _$_usuarioAtom.reportRead();
+    return super._usuario;
+  }
+
+  @override
+  String? get _usuario => usuario;
+
+  @override
+  set _usuario(String? value) {
+    _$_usuarioAtom.reportWrite(value, super._usuario, () {
+      super._usuario = value;
+    });
+  }
+
   late final _$loginAsyncAction =
       AsyncAction('LoginControllerBase.login', context: context);
 

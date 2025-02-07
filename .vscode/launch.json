@@ -9,7 +9,7 @@
             "request": "launch",
             "type": "dart",
             "args": [
-               "--dart-define=GOOGLE_KEY=AIzaSyBe5FADCFHBE32lHvGUPeVdVL1VCZxHphc",
+               "--dart-define=GOOGLE_KEY=",
             ]
         },
         {

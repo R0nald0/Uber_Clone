@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:uber/Rotas.dart';
-import 'package:uber/core/offline_database/uber_clone_life_cycle.dart';
+import 'package:uber/app/module/home_module/home_module_passageiro/home_module_passageiro.dart';
+import 'package:uber/app/module/login_module/login_module.dart';
+import 'package:uber/app/module/splash_screen_module/splash_module.dart';
+import 'package:uber_clone_core/uber_clone_core.dart';
 
   final ThemeData temaPadrao = ThemeData(
     useMaterial3: true,
@@ -38,12 +38,16 @@ class _MainWidgetState extends State<MainWidget> {
   }
   @override
   Widget build(BuildContext context) {
-    Modular.setInitialRoute(Rotas.ROUTE_SPLASHSCREEN);
-
-    return MaterialApp.router(
-      title: 'Uber',
-      theme: Platform.isIOS == true? temaIos :temaPadrao,
-      routerConfig: Modular.routerConfig,
-    );
+  
+    return  UberCloneCoreConfig(
+      title: "Uber Passageiro", 
+      initialRoute:'/SplashModule/home' ,
+      modulesRouter: [
+          SplashModule(),
+          HomeModulePassageiro(),
+          RegisterModule()
+      ],
+      
+      );
   }
 }

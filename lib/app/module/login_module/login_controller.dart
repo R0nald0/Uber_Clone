@@ -1,39 +1,37 @@
 
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:mobx/mobx.dart';
-import 'package:uber/Rotas.dart';
-import 'package:uber/app/repository/auth_repository/I_auth_repository.dart';
-import 'package:uber/app/services/user_service/user_service.dart';
-import 'package:uber/core/exceptions/user_exception.dart';
+import 'package:uber_clone_core/uber_clone_core.dart';
 
 part 'login_controller.g.dart';
 
-
 class LoginController = LoginControllerBase with _$LoginController;
 
-abstract class LoginControllerBase with Store{
-final UserService _userService;
-final IAuthRepository _authRepository;
-LoginControllerBase({required UserService serviceUser,required IAuthRepository authRepository}) :
-_userService  = serviceUser,
-_authRepository =authRepository,
-super();
+abstract class LoginControllerBase with Store {
+  final IUserService _userService;
+  final IAuthService _authService;
+  
+  LoginControllerBase({required IUserService serviceUser,required IAuthService authService}):
+        _userService = serviceUser,
+        _authService = authService,
+        super();
 
-@readonly
-String? _errorMensage ;
+  @readonly
+  String? _errorMensage;
 
-@action
-Future<void> login(String email,String password)async{
-   try {
-       _errorMensage = null;
-      final user =await _authRepository.logar(email,password);
-       if (user != null) {
-         Modular.to.pushNamedAndRemoveUntil(Rotas.ROUTE_VIEWPASSAGEIRO, (_) => false);
-       }
-      
-   } on UserException catch (e) {
+  @readonly
+  String? _usuario;
+  
+
+  @action
+  Future<void> login(String email, String password) async {
+    try {
+      _errorMensage = null;
+      final user = await _authService.login(email, password);
+      if (user) {
+        
+      }
+    } on UserException catch (e) {
       _errorMensage = e.message;
-   }
-}
-
+    }
+  }
 }

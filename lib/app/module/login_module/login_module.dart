@@ -1,30 +1,42 @@
-import 'package:flutter_modular/flutter_modular.dart';
+import 'package:flutter_getit/flutter_getit.dart';
+
 import 'package:uber/app/module/login_module/login_controller.dart';
 import 'package:uber/app/module/login_module/login_page.dart';
-import 'package:uber/app/repository/user_repository/i_user_repository.dart';
-import 'package:uber/app/repository/user_repository/impl/user_repository_impl.dart';
-import 'package:uber/app/services/user_service/impl/user_service_Impl.dart';
-import 'package:uber/app/services/user_service/user_service.dart';
+import 'package:uber/app/module/register_module/register_controller.dart';
+import 'package:uber/app/module/register_module/register_page.dart';
+import 'package:uber_clone_core/uber_clone_core.dart';
 
-class LoginModule extends Module {
-  @override
-  void binds(Injector i) {
-    super.binds(i);
-    i.addLazySingleton<IUserRepository>(() => UserRepositoryImpl(
-          localStoreage: Modular.get(),
-          log: Modular.get(),
-        ));
-    i.addLazySingleton<UserService>(
-        () => UserServiceImpl(userRepository: Modular.get<IUserRepository>()));
-    i.addLazySingleton(() => LoginController(serviceUser: Modular.get(),authRepository: Modular.get()));
-  }
 
-  @override
-  void routes(RouteManager r) {
-    super.routes(r);
-    r.child(Modular.initialRoute,
-        child: (_) => LoginPage(
-              loginController: Modular.get<LoginController>(),
-            ));
-  }
+class RegisterModule extends FlutterGetItModuleRouter {
+  RegisterModule():super(
+    name: "/Register",
+    bindings: [
+      Bind.lazySingleton<IAuthService>((i) => i()),
+      Bind.lazySingleton<IUserService>((i) => i())
+    ],
+    pages: [
+      FlutterGetItPageRouter(
+        name: "/LoginPage",
+        bindings: [
+         Bind.lazySingleton((i) =>LoginController(
+            serviceUser: i(), 
+            authService: i()
+            ))
+        ],
+        builder: (context) =>LoginPage(loginController: context.get<LoginController>()),
+      ),
+      FlutterGetItPageRouter(
+        name: "/RegisterPage",
+        bindings: [
+          Bind.lazySingleton((i) => RegisterController(
+            userService: i(), 
+            authRepository: i()
+            ),)
+        ],
+        builder: (context) =>RegisterPage(registerController: context.get<RegisterController>()),
+      
+      )
+    ],
+  );
+  
 }

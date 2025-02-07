@@ -1,35 +1,29 @@
 
  
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:mobx/mobx.dart';
-import 'package:uber/Rotas.dart';
-import 'package:uber/app/repository/auth_repository/I_auth_repository.dart';
-import 'package:uber/app/services/user_service/user_service.dart';
-import 'package:uber/core/constants/uber_clone_contstants.dart';
-import 'package:uber/core/exceptions/user_exception.dart';
+import 'package:uber_clone_core/uber_clone_core.dart';
 
 part 'register_controller.g.dart';
 
 class RegisterController = RegisterControllerBase with _$RegisterController ;
 
 abstract class RegisterControllerBase with Store {
-  final UserService _userService;
-  final IAuthRepository _authRepository;
+  final IUserService _userService;
+  final IAuthService _authService;
 
   @readonly
   String? _errorMessange;
 
-  RegisterControllerBase({required UserService userService,required IAuthRepository authRepository})
+  RegisterControllerBase({required IUserService userService,required IAuthService authRepository})
   :_userService =userService,
-   _authRepository =authRepository
-  ;
+   _authService =authRepository;
 
   Future<void> register(String name,String email,String password) async{
      try {
         _errorMessange =null;
-       final user  = await _authRepository.register(name, email, password,UberCloneConstants.TIPO_USUARIO_PASSAGEIRO);
+       final user  = await _authService.register(name, email, password,UberCloneConstants.TIPO_USUARIO_PASSAGEIRO);
        if (user != null) {
-         Modular.to.navigate(Rotas.ROUTE_VIEWPASSAGEIRO);
+
          return;
        }
        throw UserException(message: "Erro ao criar usuario");

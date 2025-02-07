@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
-import 'package:uber/app/model/Usuario.dart';
 import 'package:uber/app/module/register_module/register_controller.dart';
-import 'package:uber/core/mixins/dialog_loader/dialog_loader.dart';
-import 'package:uber/core/widgets/uber_text_fields/uber_text_field_widget.dart';
+import 'package:uber_clone_core/uber_clone_core.dart';
 import 'package:validatorless/validatorless.dart';
 
 class RegisterPage extends StatefulWidget{
   final RegisterController registerController;
-
   const RegisterPage({super.key, required this.registerController});
 
   @override
   State<StatefulWidget> createState() => RegisterPageState();
-
 }
 
 class RegisterPageState extends State<RegisterPage> with DialogLoader{
@@ -116,8 +112,6 @@ class RegisterPageState extends State<RegisterPage> with DialogLoader{
             ]),
             ),
        
-            
-           
            Padding(
              padding: const EdgeInsets.only(top: 13,bottom: 13),
              child: UberTextFieldWidget(

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:mobx/mobx.dart';
-import 'package:uber/Rotas.dart';
 import 'package:uber/app/module/login_module/login_controller.dart';
-import 'package:uber/core/mixins/dialog_loader/dialog_loader.dart';
-import 'package:uber/core/widgets/uber_text_fields/uber_text_field_widget.dart';
+import 'package:uber_clone_core/uber_clone_core.dart';
 import 'package:validatorless/validatorless.dart';
 
 class LoginPage extends StatefulWidget {
@@ -135,7 +132,7 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
         ),
         TextButton(
             onPressed: () {
-              Modular.to.pushNamed(Rotas.ROUTE_REGISTER,);
+              Navigator.of(context).pushNamed("/Register/RegisterPage");
             },
             child: const Text(
               "Nao tem conta, Cadastre-se!! ",

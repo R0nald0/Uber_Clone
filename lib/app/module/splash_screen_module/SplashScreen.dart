@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
 import 'package:uber/Rotas.dart';
 import 'package:uber/app/module/core/authentication_controller.dart';
-import 'package:uber/core/mixins/dialog_loader/dialog_loader.dart';
+import 'package:uber_clone_core/uber_clone_core.dart';
 
 class SplashScreen extends StatefulWidget {
   final AuthenticationController _auth;
@@ -14,30 +14,44 @@ class SplashScreen extends StatefulWidget {
   State<StatefulWidget> createState() => SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen>  with DialogLoader{
-  late ReactionDisposer reactionDisposerAuth;
+class SplashScreenState extends State<SplashScreen> with DialogLoader {
+  final reactionDisposer = <ReactionDisposer>[];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      initReactions();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_)  {
+       initReactions();
     });
   }
 
-   void initReactions() async {
-      widget._auth.verifyStateUserLogged();
-  reactionDisposerAuth  =reaction<String?>((_)=>widget._auth.errorMessage, (erro){
-         if (erro !=null) {
-            callSnackBar(erro);
-            Navigator.pushNamedAndRemoveUntil(context, Rotas.ROUTE_LOGIN, (_)=>false);
-         }
-    }); 
-  } 
+  Future<void> initReactions() async {
+    final reactionDisposerAuth = reaction<String?>((_) => widget._auth.errorMessage, (erro) {
+      if (erro != null) {
+        callSnackBar(erro);
+        Navigator.pushNamedAndRemoveUntil(
+            context, Rotas.ROUTE_LOGIN, (_) => false);
+      }
+    });
+    final reactionUserId = reaction<String?>((_) => widget._auth.idUser, (id){
+        if ( id!.isNotEmpty) {
+        Navigator.of(context).pushNamedAndRemoveUntil('Home/PassageiroPage', (_) => false,);
+      }else{
+         Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_LOGIN, (_) => false);
+      }
+    });
+
+     widget._auth.verifyStateUserLogged();
+
+    reactionDisposer.addAll([reactionUserId, reactionDisposerAuth]);
+  }
 
   @override
   void dispose() {
-    reactionDisposerAuth();
+    for (var reactioon in reactionDisposer) {
+      reactioon();
+    }
     super.dispose();
   }
 
@@ -49,14 +63,14 @@ class SplashScreenState extends State<SplashScreen>  with DialogLoader{
         decoration: const BoxDecoration(
           color: Colors.black87,
         ),
-        child: const Center(
+        child:  const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             spacing: 70,
             children: <Widget>[
               CircleAvatar(
                 radius: 100,
-                backgroundImage:AssetImage("images/logo.png"),
+                backgroundImage: AssetImage("images/logo.png"),
               ),
               LinearProgressIndicator(
                 color: Colors.blue,
