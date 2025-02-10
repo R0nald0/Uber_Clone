@@ -27,6 +27,24 @@ mixin _$AuthenticationController on AuthenticationControllerBase, Store {
     });
   }
 
+  late final _$_idUserAtom =
+      Atom(name: 'AuthenticationControllerBase._idUser', context: context);
+
+  String? get idUser {
+    _$_idUserAtom.reportRead();
+    return super._idUser;
+  }
+
+  @override
+  String? get _idUser => idUser;
+
+  @override
+  set _idUser(String? value) {
+    _$_idUserAtom.reportWrite(value, super._idUser, () {
+      super._idUser = value;
+    });
+  }
+
   late final _$verifyStateUserLoggedAsyncAction = AsyncAction(
       'AuthenticationControllerBase.verifyStateUserLogged',
       context: context);

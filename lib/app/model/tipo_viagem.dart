@@ -1,4 +1,0 @@
-enum TipoViagem {
-  uberX,
-  uberMoto,
-}

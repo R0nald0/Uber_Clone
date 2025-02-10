@@ -2,54 +2,41 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mobx/mobx.dart';
-import 'package:uber/Rotas.dart';
-import 'package:uber/app/model/Requisicao.dart';
-import 'package:uber/app/model/Usuario.dart';
-import 'package:uber/app/model/addres.dart';
-import 'package:uber/app/model/polyline_data.dart';
-import 'package:uber/app/model/trip.dart';
-import 'package:uber/app/repository/addres_reposiory/address_repository_impl.dart';
-import 'package:uber/app/repository/auth_repository/I_auth_repository.dart';
-import 'package:uber/app/repository/mapsCameraRepository/maps_camera_repository.dart';
-import 'package:uber/app/services/location_service/location_service_impl.dart';
-import 'package:uber/app/services/trip_service/trip_service.dart';
-import 'package:uber/app/services/user_service/user_service.dart';
-import 'package:uber/app/util/Status.dart';
-import 'package:uber/core/exceptions/addres_exception.dart';
-import 'package:uber/core/exceptions/requisicao_exception.dart';
-import 'package:uber/core/exceptions/user_exception.dart';
-
+import 'package:uber_clone_core/uber_clone_core.dart';
 part 'home_passageiro_controller.g.dart';
 
 class HomePassageiroController = HomePassageiroControllerBase
     with _$HomePassageiroController;
 
 abstract class HomePassageiroControllerBase with Store {
-  final IAuthRepository _authRepository;
-  final AddressRepositoryImpl _addressRepository;
-  final UserService _userService;
-  final LocationServiceImpl _locationServiceImpl;
+  final IAuthService _authService;
+  final IAddresService _addressService;
+  final IRequistionService _requisitionSerivce;
+  final IUserService _userService;
+  final ILocationService _locationService;
   final MapsCameraService _mapsCameraService;
-  final TripService _tripService;
+  final ITripSerivce _tripService;
+  
   late StreamSubscription<String> streamSubscription;
 
   final controller = Completer<GoogleMapController>();
 
   HomePassageiroControllerBase({
-    required IAuthRepository authRepository,
-    required AddressRepositoryImpl addressRepository,
-    required UserService userService,
-    required LocationServiceImpl locattionService,
+    required IAuthService authService,
+    required IAddresService addressService,
+    required IRequistionService requestService,
+    required IUserService userService,
+    required ILocationService locattionService,
     required MapsCameraService cameraService,
-    required TripService tripService,
-  })  : _authRepository = authRepository,
-        _addressRepository = addressRepository,
+    required ITripSerivce tripService,
+  })  : _authService = authService,
+        _addressService = addressService,
+        _requisitionSerivce = requestService,
         _userService = userService,
-        _locationServiceImpl = locattionService,
+        _locationService = locattionService,
         _mapsCameraService = cameraService,
         _tripService = tripService;
 
@@ -87,6 +74,12 @@ abstract class HomePassageiroControllerBase with Store {
 
   @readonly
   Address? _myDestination;
+  
+  @readonly
+  String?  _textoBotaoPadrao;
+
+  @readonly 
+   Function?  _functionPadrao = (){}; 
 
   @computed
   bool get isAddressNotNullOrEmpty {
@@ -104,10 +97,13 @@ abstract class HomePassageiroControllerBase with Store {
 
   @readonly
   var _polynesRouter = <Polyline>{};
-  Future<void> getUserAddress() async {
+
+  @readonly 
+  bool? _exibirCaixasDeRotas;
+  Future<void> _getUserAddress() async {
     _errorMensager = null;
     try {
-      final address = await _addressRepository.getAddrss();
+      final address = await _addressService.getAddrss();
       _addresList = [...address];
     } on AddresException catch (e) {
       if (_errorMensager != null) {
@@ -119,7 +115,7 @@ abstract class HomePassageiroControllerBase with Store {
   }
 
   @action
-  Future<void> getCameraUserLocationPosition() async {
+  Future<void> _getCameraUserLocationPosition() async {
     final permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
@@ -135,16 +131,18 @@ abstract class HomePassageiroControllerBase with Store {
         zoom: 16,
       );
 
-      final address = await _locationServiceImpl.findDataLocationFromLatLong(
+      final address = await _locationService.findDataLocationFromLatLong(
           camPositon.latitude, camPositon.longitude);
       await setNameMyLocal(address);
     }
   }
 
   Future<void> getDataUSerOn() async {
+    _errorMensager = null;
+    _usuario = null;
     try {
       _errorMensager = null;
-      final idCurrentUser = _authRepository.getIdCurrenteUserUser();
+      final idCurrentUser = await _authService.verifyStateUserLogged();
       if (idCurrentUser != null) {
         _usuario = await _userService.getDataUserOn(idCurrentUser);
       } else {
@@ -158,22 +156,23 @@ abstract class HomePassageiroControllerBase with Store {
   }
 
   Future<void> verfyActivatedRequisition() async {
-    _errorMensager = null;
-    if (_usuario == null || _usuario?.idUsuario == null) {
-      _errorMensager = "Usuario inválido";
-      logout();
-      return;
-    }
-
-    final requisicao =
-        await _tripService.verfyActivatedRequisition(_usuario!.idUsuario!);
-    if (requisicao != null) {
+    try {
+      _errorMensager = null;
+      if (_usuario == null || _usuario?.idUsuario == null) {
+        _errorMensager = "Usuario inválido";
+        logout();
+        return;
+      }
+      //Todo verificar metodo
+      final requisicao = await _requisitionSerivce
+          .verfyActivatedRequisition(_usuario!.idUsuario!);
+      //TODO melhor trazer retorno nulo quando id não encontrado
       _requisicao = requisicao;
-
       // initListener();
-    } else {
+      return;
+    } on RequestException catch (e) {
       _requisicao = Requisicao.empty();
-      _errorMensager = "Nenhuma viagem ativa";
+      _errorMensager = e.message;
     }
   }
 
@@ -181,12 +180,29 @@ abstract class HomePassageiroControllerBase with Store {
     final latitude = requisicao.passageiro.latitude;
     final longitude = requisicao.passageiro.longitude;
 
-    final addressPassanger = await _locationServiceImpl.findDataLocationFromLatLong(latitude, longitude);
-    
+    final addressPassanger =
+        await _locationService.findDataLocationFromLatLong(latitude, longitude);
+
     await setNameMyLocal(addressPassanger);
     await setDestinationLocal(requisicao.destino);
   }
 
+  Future<void> logout() async {
+    _authService.logout();
+    _usuario = null;
+  }
+
+  @action
+  Future<void> _getUserLocation() async {
+    final actualPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    final address = await _locationService.findDataLocationFromLatLong(
+        actualPosition.latitude, actualPosition.longitude);
+    await setNameMyLocal(address);
+  }
+
+  @action
   Future<void> getPermissionLocation() async {
     _locationPermission = null;
 
@@ -201,34 +217,29 @@ abstract class HomePassageiroControllerBase with Store {
     final permission = await Geolocator.checkPermission();
     switch (permission) {
       case LocationPermission.denied:
-        _locationPermission = await Geolocator.requestPermission();
-        return;
+        final permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied ||
+            permission == LocationPermission.deniedForever) {
+          _locationPermission = permission;
+          return;
+        }
+        break;
+
       case LocationPermission.deniedForever:
         _locationPermission = LocationPermission.deniedForever;
         return;
+
       case LocationPermission.whileInUse:
       case LocationPermission.always:
       case LocationPermission.unableToDetermine:
-        _locationPermission = permission;
-        getUserLocation();
+        break;
     }
+    
+    await _getUserLocation();
+    await _getCameraUserLocationPosition();
+    await _getUserAddress();
   }
-
-  Future<void> logout() async {
-    _authRepository.logout();
-    _usuario = null;
-    Modular.to.pushNamedAndRemoveUntil(Rotas.ROUTE_LOGIN, (_) => false);
-  }
-
-  @action
-  Future<void> getUserLocation() async {
-    final actualPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-
-    final address = await _locationServiceImpl.findDataLocationFromLatLong(
-        actualPosition.latitude, actualPosition.longitude);
-    await setNameMyLocal(address);
-  }
+  
 
   @action
   Future<void> setNameMyLocal(Address addres) async {
@@ -241,9 +252,12 @@ abstract class HomePassageiroControllerBase with Store {
     );
 
     if (_usuario != null) {
-      final pathImageIcon = await _locationServiceImpl
-          .markerPositionIconCostomizer("destination1", 0.0);
-      final myMarkerLocal = _locationServiceImpl.createLocationMarker(
+      final pathImageIcon = await _locationService.markerPositionIconCostomizer(
+           "images/destination1.png", 
+            0.0, const Size(20, 20)
+          );
+
+      final myMarkerLocal = _locationService.createLocationMarker(
           addres.latitude,
           addres.longitude,
           pathImageIcon,
@@ -265,9 +279,9 @@ abstract class HomePassageiroControllerBase with Store {
       zoom: 16,
     );
 
-    final pathImageIcon = await _locationServiceImpl
-        .markerPositionIconCostomizer("destination2", 200);
-    final myMarkerLocal = _locationServiceImpl.createLocationMarker(
+    final pathImageIcon = await _locationService.markerPositionIconCostomizer(
+        "images/destination2.png", 0.0, const Size(20, 20));
+    final myMarkerLocal = _locationService.createLocationMarker(
         addres.latitude,
         addres.longitude,
         pathImageIcon,
@@ -294,15 +308,15 @@ abstract class HomePassageiroControllerBase with Store {
   @action
   Future<List<Address>> findAddresByName(String addresName) async {
     try {
-      _errorMensager = null;
-
-      if (addresName.isNotEmpty) {
-        final adress = await _locationServiceImpl.findAddresByName(addresName);
+     const apiKey =String.fromEnvironment('maps_key',defaultValue: "");
+      if (addresName.isNotEmpty && apiKey.isNotEmpty ) {
+        final adress = await _locationService.findAddresByName( addresName,apiKey );
 
         return adress;
       }
       return <Address>[];
     } on AddresException catch (e) {
+        _errorMensager = null;
       _errorMensager = e.message;
       return <Address>[];
     }
@@ -313,7 +327,7 @@ abstract class HomePassageiroControllerBase with Store {
     _polynesRouter = <Polyline>{};
     if (isAddressNotNullOrEmpty) {
       final polylinesData = await _tripService.getRoute(
-          _myAddres!, _myDestination!, Colors.black, 5);
+          _myAddres!, _myDestination!, Colors.black, 5, const String.fromEnvironment('maps_key'));
       final linesCordenates = Set<Polyline>.of(polylinesData.router.values);
       _polynesRouter = linesCordenates;
       _configureTripList(polylinesData);
@@ -349,28 +363,29 @@ abstract class HomePassageiroControllerBase with Store {
     final lat = _myDestination!.latitude;
     final long = _myDestination!.longitude;
 
-    final userUpadated = _usuario!.copyWith(latitude: myLat, longitude: myLong);
-
     try {
       final destinationAddress =
-          await _locationServiceImpl.findDataLocationFromLatLong(lat, long);
+          await _locationService.findDataLocationFromLatLong(lat, long);
 
       final requisicao = Requisicao(
           id: null,
           destino: destinationAddress,
           motorista: null,
-          passageiro: userUpadated,
+          passageiro: _usuario!,
           status: Status.AGUARDANDO,
           valorCorrida: _tripSelected!.price);
 
-      final onRequition =
-          await _tripService.createRequisitionToRide(requisicao);
-      if (onRequition != null) {
-        _requisicao = onRequition;
-      } else {
-        _requisicao = null;
-      }
-    } on RequisicaoException catch (e, s) {
+      final requestId = await _requisitionSerivce.createRequisition(requisicao);
+
+      final userUpadated = _usuario!.copyWith(
+          idRequisicaoAtiva: requestId, latitude: myLat, longitude: myLong);
+      await _userService.updateUser(userUpadated);
+
+      final requestUpdated = await _requisitionSerivce.updataDataRequisition(requisicao, {"idRequisicao": requestId, "passageiro": userUpadated});
+      _requisicao = requestUpdated;
+      _usuario = userUpadated;
+    } on RequestException catch (e, s) {
+
       _errorMensager = e.message;
       if (kDebugMode) {
         print(s);
@@ -391,7 +406,7 @@ abstract class HomePassageiroControllerBase with Store {
       return;
     }
 
-    final isCancel = await _tripService.cancelRequisition(_requisicao!);
+    final isCancel = await _requisitionSerivce.cancelRequisition(_requisicao!);
     if (isCancel) {
       _requisicao = null;
     }
@@ -416,8 +431,13 @@ abstract class HomePassageiroControllerBase with Store {
     LocationSettings locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high, distanceFilter: 5);
 
-    final pathImageIcon = await _locationServiceImpl
-        .markerPositionIconCostomizer("destination2", 200);
+    final pathImageIcon = await _locationService.markerPositionIconCostomizer(
+        "destination2",
+        200,
+        const Size(
+          80,
+          80,
+        ));
 
     Geolocator.getPositionStream(
       locationSettings: locationSettings,
@@ -425,10 +445,10 @@ abstract class HomePassageiroControllerBase with Store {
       if (_requisicao != null) {
         final userUpdated = _usuario!.copyWith(
             latitude: position.latitude, longitude: position.longitude);
-        _tripService.updataDataRequisition(
-            _requisicao!.id!, 'passageiro', userUpdated);
+        _requisitionSerivce.updataDataRequisition(
+            _requisicao!, userUpdated.toMap());
 
-        final myMarkerLocal = _locationServiceImpl.createLocationMarker(
+        final myMarkerLocal = _locationService.createLocationMarker(
             position.latitude,
             position.longitude,
             pathImageIcon,

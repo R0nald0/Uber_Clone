@@ -54,14 +54,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
-  auto_injector:
-    dependency: transitive
-    description:
-      name: auto_injector
-      sha256: d2e204bc46d7349795364884d07ba79fe6a0f3a84a651b70dcbb68d82dcebab0
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.5"
   boolean_selector:
     dependency: transitive
     description:
@@ -332,7 +324,7 @@ packages:
     source: hosted
     version: "5.1.0"
   flutter_getit:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_getit
       sha256: "834a5a011dbad55121777f0b871551c049ca84c7c231eb0994ee29b3cb513b03"
@@ -403,14 +395,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.1+1"
-  flutter_modular:
-    dependency: "direct main"
-    description:
-      name: flutter_modular
-      sha256: bc17a1eb1da676b9111e59d27834fb6673bdea01aead12f0803a0847ff9d451c
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.3.4"
   flutter_plugin_android_lifecycle:
     dependency: "direct main"
     description:
@@ -598,7 +582,7 @@ packages:
     source: hosted
     version: "0.5.10"
   google_places:
-    dependency: "direct main"
+    dependency: transitive
     description:
       path: "../google_place"
       relative: true
@@ -796,14 +780,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
-  modular_core:
-    dependency: transitive
-    description:
-      name: modular_core
-      sha256: bd60317c81cff3a510aca19d6ddd661c7c79e3cba97b9f39e9ad199156ff255d
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.3.3"
   nested:
     dependency: transitive
     description:
@@ -932,14 +908,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.0"
-  result_dart:
-    dependency: transitive
-    description:
-      name: result_dart
-      sha256: "3c69c864a08df0f413a86be211d07405e9a53cc1ac111e3cc8365845a0fb5288"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.1"
   sanitize_html:
     dependency: transitive
     description:

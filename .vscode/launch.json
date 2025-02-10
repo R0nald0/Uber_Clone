@@ -7,7 +7,11 @@
         {
             "name": "Uber_Clone",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "args": [
+               "--dart-define-from-file",
+               "env_local.json"
+            ]
         },
         {
             "name": "Uber_Clone (profile mode)",
