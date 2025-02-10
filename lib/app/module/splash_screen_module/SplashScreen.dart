@@ -9,7 +9,6 @@ class SplashScreen extends StatefulWidget {
 
   const SplashScreen({super.key, required AuthenticationController auth})
       : _auth = auth;
-
   @override
   State<StatefulWidget> createState() => SplashScreenState();
 }
@@ -20,10 +19,11 @@ class SplashScreenState extends State<SplashScreen> with DialogLoader {
   @override
   void initState() {
     super.initState();
-    
+  
     WidgetsBinding.instance.addPostFrameCallback((_)  {
        initReactions();
     });
+
   }
 
   Future<void> initReactions() async {
@@ -35,14 +35,14 @@ class SplashScreenState extends State<SplashScreen> with DialogLoader {
       }
     });
     final reactionUserId = reaction<String?>((_) => widget._auth.idUser, (id){
-        if ( id!.isNotEmpty) {
-        Navigator.of(context).pushNamedAndRemoveUntil('Home/PassageiroPage', (_) => false,);
+        if (  id !=null && id.isNotEmpty) {
+        Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_VIEWPASSAGEIRO, (_) => false,);
       }else{
          Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_LOGIN, (_) => false);
       }
     });
 
-     widget._auth.verifyStateUserLogged();
+    widget._auth.verifyStateUserLogged();
 
     reactionDisposer.addAll([reactionUserId, reactionDisposerAuth]);
   }

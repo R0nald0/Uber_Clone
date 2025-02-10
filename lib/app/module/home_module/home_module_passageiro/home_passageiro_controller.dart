@@ -19,20 +19,21 @@ abstract class HomePassageiroControllerBase with Store {
   final ILocationService _locationService;
   final MapsCameraService _mapsCameraService;
   final ITripSerivce _tripService;
+  
   late StreamSubscription<String> streamSubscription;
 
   final controller = Completer<GoogleMapController>();
 
   HomePassageiroControllerBase({
-    required IAuthService authRepository,
-    required IAddresService addressRepository,
+    required IAuthService authService,
+    required IAddresService addressService,
     required IRequistionService requestService,
     required IUserService userService,
     required ILocationService locattionService,
     required MapsCameraService cameraService,
     required ITripSerivce tripService,
-  })  : _authService = authRepository,
-        _addressService = addressRepository,
+  })  : _authService = authService,
+        _addressService = addressService,
         _requisitionSerivce = requestService,
         _userService = userService,
         _locationService = locattionService,
@@ -73,6 +74,12 @@ abstract class HomePassageiroControllerBase with Store {
 
   @readonly
   Address? _myDestination;
+  
+  @readonly
+  String?  _textoBotaoPadrao;
+
+  @readonly 
+   Function?  _functionPadrao = (){}; 
 
   @computed
   bool get isAddressNotNullOrEmpty {
@@ -90,7 +97,10 @@ abstract class HomePassageiroControllerBase with Store {
 
   @readonly
   var _polynesRouter = <Polyline>{};
-  Future<void> getUserAddress() async {
+
+  @readonly 
+  bool? _exibirCaixasDeRotas;
+  Future<void> _getUserAddress() async {
     _errorMensager = null;
     try {
       final address = await _addressService.getAddrss();
@@ -105,7 +115,7 @@ abstract class HomePassageiroControllerBase with Store {
   }
 
   @action
-  Future<void> getCameraUserLocationPosition() async {
+  Future<void> _getCameraUserLocationPosition() async {
     final permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
@@ -130,7 +140,6 @@ abstract class HomePassageiroControllerBase with Store {
   Future<void> getDataUSerOn() async {
     _errorMensager = null;
     _usuario = null;
-
     try {
       _errorMensager = null;
       final idCurrentUser = await _authService.verifyStateUserLogged();
@@ -178,6 +187,22 @@ abstract class HomePassageiroControllerBase with Store {
     await setDestinationLocal(requisicao.destino);
   }
 
+  Future<void> logout() async {
+    _authService.logout();
+    _usuario = null;
+  }
+
+  @action
+  Future<void> _getUserLocation() async {
+    final actualPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    final address = await _locationService.findDataLocationFromLatLong(
+        actualPosition.latitude, actualPosition.longitude);
+    await setNameMyLocal(address);
+  }
+
+  @action
   Future<void> getPermissionLocation() async {
     _locationPermission = null;
 
@@ -192,33 +217,29 @@ abstract class HomePassageiroControllerBase with Store {
     final permission = await Geolocator.checkPermission();
     switch (permission) {
       case LocationPermission.denied:
-        _locationPermission = await Geolocator.requestPermission();
-        return;
+        final permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied ||
+            permission == LocationPermission.deniedForever) {
+          _locationPermission = permission;
+          return;
+        }
+        break;
+
       case LocationPermission.deniedForever:
         _locationPermission = LocationPermission.deniedForever;
         return;
+
       case LocationPermission.whileInUse:
       case LocationPermission.always:
       case LocationPermission.unableToDetermine:
-        _locationPermission = permission;
-        getUserLocation();
+        break;
     }
+    
+    await _getUserLocation();
+    await _getCameraUserLocationPosition();
+    await _getUserAddress();
   }
-
-  Future<void> logout() async {
-    _authService.logout();
-    _usuario = null;
-  }
-
-  @action
-  Future<void> getUserLocation() async {
-    final actualPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-
-    final address = await _locationService.findDataLocationFromLatLong(
-        actualPosition.latitude, actualPosition.longitude);
-    await setNameMyLocal(address);
-  }
+  
 
   @action
   Future<void> setNameMyLocal(Address addres) async {
@@ -232,7 +253,10 @@ abstract class HomePassageiroControllerBase with Store {
 
     if (_usuario != null) {
       final pathImageIcon = await _locationService.markerPositionIconCostomizer(
-          "destination1", 0.0, const Size(80, 80));
+           "images/destination1.png", 
+            0.0, const Size(20, 20)
+          );
+
       final myMarkerLocal = _locationService.createLocationMarker(
           addres.latitude,
           addres.longitude,
@@ -256,7 +280,7 @@ abstract class HomePassageiroControllerBase with Store {
     );
 
     final pathImageIcon = await _locationService.markerPositionIconCostomizer(
-        "destination2", 200, const Size(80, 80));
+        "images/destination2.png", 0.0, const Size(20, 20));
     final myMarkerLocal = _locationService.createLocationMarker(
         addres.latitude,
         addres.longitude,
@@ -284,16 +308,15 @@ abstract class HomePassageiroControllerBase with Store {
   @action
   Future<List<Address>> findAddresByName(String addresName) async {
     try {
-      _errorMensager = null;
-
-      if (addresName.isNotEmpty) {
-        final adress = await _locationService.findAddresByName(
-            addresName, const String.fromEnvironment('GOOGLE_KEY'));
+     const apiKey =String.fromEnvironment('maps_key',defaultValue: "");
+      if (addresName.isNotEmpty && apiKey.isNotEmpty ) {
+        final adress = await _locationService.findAddresByName( addresName,apiKey );
 
         return adress;
       }
       return <Address>[];
     } on AddresException catch (e) {
+        _errorMensager = null;
       _errorMensager = e.message;
       return <Address>[];
     }
@@ -304,7 +327,7 @@ abstract class HomePassageiroControllerBase with Store {
     _polynesRouter = <Polyline>{};
     if (isAddressNotNullOrEmpty) {
       final polylinesData = await _tripService.getRoute(
-          _myAddres!, _myDestination!, Colors.black, 5, 'GOOGLE_KEY');
+          _myAddres!, _myDestination!, Colors.black, 5, const String.fromEnvironment('maps_key'));
       final linesCordenates = Set<Polyline>.of(polylinesData.router.values);
       _polynesRouter = linesCordenates;
       _configureTripList(polylinesData);
@@ -358,11 +381,11 @@ abstract class HomePassageiroControllerBase with Store {
           idRequisicaoAtiva: requestId, latitude: myLat, longitude: myLong);
       await _userService.updateUser(userUpadated);
 
-      final requestUpdated = await _requisitionSerivce.updataDataRequisition(
-          requisicao, {"idRequisicao": requestId, "passageiro": userUpadated});
+      final requestUpdated = await _requisitionSerivce.updataDataRequisition(requisicao, {"idRequisicao": requestId, "passageiro": userUpadated});
       _requisicao = requestUpdated;
       _usuario = userUpadated;
     } on RequestException catch (e, s) {
+
       _errorMensager = e.message;
       if (kDebugMode) {
         print(s);

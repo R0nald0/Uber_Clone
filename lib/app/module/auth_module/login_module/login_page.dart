@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
-import 'package:uber/app/module/login_module/login_controller.dart';
+import 'package:uber/Rotas.dart';
+import 'package:uber/app/module/auth_module/login_controller.dart';
 import 'package:uber_clone_core/uber_clone_core.dart';
 import 'package:validatorless/validatorless.dart';
 
@@ -17,18 +18,26 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
   final _controllerSenha = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  late ReactionDisposer errorReactionDispose;
-
+   final reactions = <ReactionDisposer>[];
   String erroMensagem = "";
 
   initReaction() {
-    errorReactionDispose =
+   final errorReactionDispose =
         reaction<String?>((_) => widget.loginController.errorMensage, (erro) {
       if (erro != null && erro.isNotEmpty) {
         callSnackBar(erro);
       }
     });
+
+    final reactionSuccesLogin = reaction((_)=>widget.loginController.hasSuccessLogin, (success){
+         if (success! && success) {
+           Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_LOGIN,(_) =>false);
+         } 
+    });
+
+    reactions.addAll([reactionSuccesLogin,errorReactionDispose]);
   }
+
 
   @override
   void initState() {
@@ -38,9 +47,13 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
 
   @override
   void dispose() {
-    errorReactionDispose();
+      for (var reaction in reactions) {
+         reaction();
+      }
+
     _controllerEmail.dispose();
     _controllerSenha.dispose();
+
     super.dispose();
   }
 
@@ -132,7 +145,7 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
         ),
         TextButton(
             onPressed: () {
-              Navigator.of(context).pushNamed("/Register/RegisterPage");
+              Navigator.of(context).pushNamed(Rotas.ROUTE_REGISTER);
             },
             child: const Text(
               "Nao tem conta, Cadastre-se!! ",

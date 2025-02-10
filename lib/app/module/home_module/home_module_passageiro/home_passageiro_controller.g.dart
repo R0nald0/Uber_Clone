@@ -234,6 +234,42 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
     });
   }
 
+  late final _$_textoBotaoPadraoAtom = Atom(
+      name: 'HomePassageiroControllerBase._textoBotaoPadrao', context: context);
+
+  String? get textoBotaoPadrao {
+    _$_textoBotaoPadraoAtom.reportRead();
+    return super._textoBotaoPadrao;
+  }
+
+  @override
+  String? get _textoBotaoPadrao => textoBotaoPadrao;
+
+  @override
+  set _textoBotaoPadrao(String? value) {
+    _$_textoBotaoPadraoAtom.reportWrite(value, super._textoBotaoPadrao, () {
+      super._textoBotaoPadrao = value;
+    });
+  }
+
+  late final _$_functionPadraoAtom = Atom(
+      name: 'HomePassageiroControllerBase._functionPadrao', context: context);
+
+  Function? get functionPadrao {
+    _$_functionPadraoAtom.reportRead();
+    return super._functionPadrao;
+  }
+
+  @override
+  Function? get _functionPadrao => functionPadrao;
+
+  @override
+  set _functionPadrao(Function? value) {
+    _$_functionPadraoAtom.reportWrite(value, super._functionPadrao, () {
+      super._functionPadrao = value;
+    });
+  }
+
   late final _$_markersAtom =
       Atom(name: 'HomePassageiroControllerBase._markers', context: context);
 
@@ -270,23 +306,53 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
     });
   }
 
-  late final _$getCameraUserLocationPositionAsyncAction = AsyncAction(
-      'HomePassageiroControllerBase.getCameraUserLocationPosition',
+  late final _$_exibirCaixasDeRotasAtom = Atom(
+      name: 'HomePassageiroControllerBase._exibirCaixasDeRotas',
       context: context);
 
-  @override
-  Future<void> getCameraUserLocationPosition() {
-    return _$getCameraUserLocationPositionAsyncAction
-        .run(() => super.getCameraUserLocationPosition());
+  bool? get exibirCaixasDeRotas {
+    _$_exibirCaixasDeRotasAtom.reportRead();
+    return super._exibirCaixasDeRotas;
   }
 
-  late final _$getUserLocationAsyncAction = AsyncAction(
-      'HomePassageiroControllerBase.getUserLocation',
+  @override
+  bool? get _exibirCaixasDeRotas => exibirCaixasDeRotas;
+
+  @override
+  set _exibirCaixasDeRotas(bool? value) {
+    _$_exibirCaixasDeRotasAtom.reportWrite(value, super._exibirCaixasDeRotas,
+        () {
+      super._exibirCaixasDeRotas = value;
+    });
+  }
+
+  late final _$_getCameraUserLocationPositionAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase._getCameraUserLocationPosition',
       context: context);
 
   @override
-  Future<void> getUserLocation() {
-    return _$getUserLocationAsyncAction.run(() => super.getUserLocation());
+  Future<void> _getCameraUserLocationPosition() {
+    return _$_getCameraUserLocationPositionAsyncAction
+        .run(() => super._getCameraUserLocationPosition());
+  }
+
+  late final _$_getUserLocationAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase._getUserLocation',
+      context: context);
+
+  @override
+  Future<void> _getUserLocation() {
+    return _$_getUserLocationAsyncAction.run(() => super._getUserLocation());
+  }
+
+  late final _$getPermissionLocationAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.getPermissionLocation',
+      context: context);
+
+  @override
+  Future<void> getPermissionLocation() {
+    return _$getPermissionLocationAsyncAction
+        .run(() => super.getPermissionLocation());
   }
 
   late final _$setNameMyLocalAsyncAction = AsyncAction(

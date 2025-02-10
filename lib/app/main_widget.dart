@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uber/Rotas.dart';
 import 'package:uber/app/module/home_module/home_module_passageiro/home_module_passageiro.dart';
-import 'package:uber/app/module/login_module/login_module.dart';
+import 'package:uber/app/module/auth_module/login_module/login_module.dart';
 import 'package:uber/app/module/splash_screen_module/splash_module.dart';
 import 'package:uber_clone_core/uber_clone_core.dart';
 

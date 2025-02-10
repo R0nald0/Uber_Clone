@@ -19,16 +19,16 @@ abstract class LoginControllerBase with Store {
   String? _errorMensage;
 
   @readonly
-  String? _usuario;
+  bool? _hasSuccessLogin;
   
 
   @action
   Future<void> login(String email, String password) async {
     try {
       _errorMensage = null;
-      final user = await _authService.login(email, password);
-      if (user) {
-        
+      final isSuccess = await _authService.login(email, password);
+      if (isSuccess) {
+        _hasSuccessLogin  = isSuccess;
       }
     } on UserException catch (e) {
       _errorMensage = e.message;

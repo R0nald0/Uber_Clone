@@ -20,7 +20,7 @@ abstract class AuthenticationControllerBase with Store {
 
   @readonly
   String? _idUser;
-
+  
   @action
    Future<void> verifyStateUserLogged() async {
     try {

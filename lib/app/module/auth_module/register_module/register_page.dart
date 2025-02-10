@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
-import 'package:uber/app/module/register_module/register_controller.dart';
+import 'package:uber/Rotas.dart';
+import 'package:uber/app/module/auth_module/register_module/register_controller.dart';
 import 'package:uber_clone_core/uber_clone_core.dart';
 import 'package:validatorless/validatorless.dart';
 
@@ -18,11 +19,8 @@ class RegisterPageState extends State<RegisterPage> with DialogLoader{
  final _controllerSenha =  TextEditingController();
  final _formKey = GlobalKey<FormState>();
 
- late ReactionDisposer errorReactionDispose;
-
-
- final bool _tipoUsuario = false;
- String erroMensagem = "";
+ 
+final reactions = <ReactionDisposer>[];
 
   @override
   void initState() {
@@ -32,16 +30,27 @@ class RegisterPageState extends State<RegisterPage> with DialogLoader{
   }
 
   initReaction(){
-    errorReactionDispose = reaction<String?>((_) =>widget.registerController.errorMessange, (erro){
-       if (erro != null && erro.isNotEmpty) {
-           callSnackBar(erro);
-       }
-     });
+     final errorReactionDispose =
+        reaction<String?>((_) => widget.registerController.errorMessange, (erro) {
+      if (erro != null && erro.isNotEmpty) {
+        callSnackBar(erro);
+      }
+    });
+
+    final reactionSuccesRegister = reaction((_)=>widget.registerController.hasSuccesRegister, (success){
+         if (success! && success) {
+           Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_VIEWPASSAGEIRO,(_) =>false);
+         } 
+    });
+
+    reactions.addAll([reactionSuccesRegister,errorReactionDispose]);
   }
 
   @override
   void dispose() {
-     errorReactionDispose();
+     for (var rection in reactions) {
+        rection();
+     }
     _controllerEmail.dispose();
     _controllerNome.dispose();
     _controllerSenha.dispose();
@@ -164,58 +173,4 @@ class RegisterPageState extends State<RegisterPage> with DialogLoader{
      );
   }
 
-  _validarCampos(){
-    String nome = _controllerNome.text;
-    String email = _controllerEmail.text;
-    String senha = _controllerSenha.text;
-
-    if(nome.isNotEmpty){
-       if(email.contains("@") && email.isNotEmpty){
-          if(senha.length > 5  && senha.isNotEmpty){
-
-             Usuario user = Usuario(
-              email: email,
-               nome: nome, 
-               tipoUsuario: verificaTipoUsuario(_tipoUsuario), 
-               senha: senha, 
-               latitude: 0, 
-               longitude: 0,
-
-             );
-          
-
-             cadastrarUsuario(user);
-
-
-          }else{
-            erroMensagem = "Erro ao Cadastrar Usuario! Defina uma senha com mais que 4 caracteres";
-            _snackBar(erroMensagem);
-          }
-       }else{
-         erroMensagem = "Erro ao Cadastrar Usuario! Defina um Email válido";
-         _snackBar(erroMensagem);
-       }
-
-    }else{
-        erroMensagem = "Erro ao Cadastrar Usuario! Defina um Nome";
-       _snackBar(erroMensagem);
-    }
-
-  }
-  String verificaTipoUsuario(bool usuarioTipo){
-     return usuarioTipo? "motorista" : "passageiro";
-  }
-
-  cadastrarUsuario(Usuario user) async{
-    // await user.cadastrarUsuario( context,user);
-  }
-
-  _snackBar(String erro){
-
-    final snackBar= SnackBar(
-        content: Text(erro),
-       );
-
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
 }

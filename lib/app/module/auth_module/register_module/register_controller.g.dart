@@ -27,6 +27,24 @@ mixin _$RegisterController on RegisterControllerBase, Store {
     });
   }
 
+  late final _$_hasSuccesRegisterAtom =
+      Atom(name: 'RegisterControllerBase._hasSuccesRegister', context: context);
+
+  bool? get hasSuccesRegister {
+    _$_hasSuccesRegisterAtom.reportRead();
+    return super._hasSuccesRegister;
+  }
+
+  @override
+  bool? get _hasSuccesRegister => hasSuccesRegister;
+
+  @override
+  set _hasSuccesRegister(bool? value) {
+    _$_hasSuccesRegisterAtom.reportWrite(value, super._hasSuccesRegister, () {
+      super._hasSuccesRegister = value;
+    });
+  }
+
   @override
   String toString() {
     return '''

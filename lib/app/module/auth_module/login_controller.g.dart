@@ -27,21 +27,21 @@ mixin _$LoginController on LoginControllerBase, Store {
     });
   }
 
-  late final _$_usuarioAtom =
-      Atom(name: 'LoginControllerBase._usuario', context: context);
+  late final _$_hasSuccessLoginAtom =
+      Atom(name: 'LoginControllerBase._hasSuccessLogin', context: context);
 
-  String? get usuario {
-    _$_usuarioAtom.reportRead();
-    return super._usuario;
+  bool? get hasSuccessLogin {
+    _$_hasSuccessLoginAtom.reportRead();
+    return super._hasSuccessLogin;
   }
 
   @override
-  String? get _usuario => usuario;
+  bool? get _hasSuccessLogin => hasSuccessLogin;
 
   @override
-  set _usuario(String? value) {
-    _$_usuarioAtom.reportWrite(value, super._usuario, () {
-      super._usuario = value;
+  set _hasSuccessLogin(bool? value) {
+    _$_hasSuccessLoginAtom.reportWrite(value, super._hasSuccessLogin, () {
+      super._hasSuccessLogin = value;
     });
   }
 

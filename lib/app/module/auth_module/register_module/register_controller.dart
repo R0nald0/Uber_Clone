@@ -14,6 +14,9 @@ abstract class RegisterControllerBase with Store {
   @readonly
   String? _errorMessange;
 
+  @readonly
+  bool? _hasSuccesRegister;
+
   RegisterControllerBase({required IUserService userService,required IAuthService authRepository})
   :_userService =userService,
    _authService =authRepository;
@@ -21,9 +24,9 @@ abstract class RegisterControllerBase with Store {
   Future<void> register(String name,String email,String password) async{
      try {
         _errorMessange =null;
-       final user  = await _authService.register(name, email, password,UberCloneConstants.TIPO_USUARIO_PASSAGEIRO);
-       if (user != null) {
-
+       final isSuccess  = await _authService.register(name, email, password,UberCloneConstants.TIPO_USUARIO_PASSAGEIRO);
+       if (isSuccess) {
+        _hasSuccesRegister = isSuccess;
          return;
        }
        throw UserException(message: "Erro ao criar usuario");
