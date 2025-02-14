@@ -17,24 +17,6 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
               name: 'HomePassageiroControllerBase.isAddressNotNullOrEmpty'))
       .value;
 
-  late final _$_statusTripAtom =
-      Atom(name: 'HomePassageiroControllerBase._statusTrip', context: context);
-
-  String get statusTrip {
-    _$_statusTripAtom.reportRead();
-    return super._statusTrip;
-  }
-
-  @override
-  String get _statusTrip => statusTrip;
-
-  @override
-  set _statusTrip(String value) {
-    _$_statusTripAtom.reportWrite(value, super._statusTrip, () {
-      super._statusTrip = value;
-    });
-  }
-
   late final _$_addresListAtom =
       Atom(name: 'HomePassageiroControllerBase._addresList', context: context);
 
@@ -374,14 +356,14 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
         .run(() => super.setDestinationLocal(addres));
   }
 
-  late final _$showAllPositionsAndTraceRouterAsyncAction = AsyncAction(
-      'HomePassageiroControllerBase.showAllPositionsAndTraceRouter',
+  late final _$_showAllPositionsAndTraceRouterAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase._showAllPositionsAndTraceRouter',
       context: context);
 
   @override
-  Future<void> showAllPositionsAndTraceRouter() {
-    return _$showAllPositionsAndTraceRouterAsyncAction
-        .run(() => super.showAllPositionsAndTraceRouter());
+  Future<void> _showAllPositionsAndTraceRouter() {
+    return _$_showAllPositionsAndTraceRouterAsyncAction
+        .run(() => super._showAllPositionsAndTraceRouter());
   }
 
   late final _$findAddresByNameAsyncAction = AsyncAction(
@@ -394,12 +376,13 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
         .run(() => super.findAddresByName(addresName));
   }
 
-  late final _$traceRouterAsyncAction =
-      AsyncAction('HomePassageiroControllerBase.traceRouter', context: context);
+  late final _$_traceRouterAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase._traceRouter',
+      context: context);
 
   @override
-  Future<void> traceRouter() {
-    return _$traceRouterAsyncAction.run(() => super.traceRouter());
+  Future<void> _traceRouter() {
+    return _$_traceRouterAsyncAction.run(() => super._traceRouter());
   }
 
   late final _$selectedTripAsyncAction = AsyncAction(

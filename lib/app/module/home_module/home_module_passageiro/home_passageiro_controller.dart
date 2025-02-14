@@ -40,8 +40,7 @@ abstract class HomePassageiroControllerBase with Store {
         _mapsCameraService = cameraService,
         _tripService = tripService;
 
-  @readonly
-  String _statusTrip = '';
+
 
   @readonly
   var _addresList = <Address>[];
@@ -79,7 +78,7 @@ abstract class HomePassageiroControllerBase with Store {
   String?  _textoBotaoPadrao;
 
   @readonly 
-   Function?  _functionPadrao = (){}; 
+  Function?  _functionPadrao; 
 
   @computed
   bool get isAddressNotNullOrEmpty {
@@ -165,7 +164,7 @@ abstract class HomePassageiroControllerBase with Store {
       }
       //Todo verificar metodo
       final requisicao = await _requisitionSerivce
-          .verfyActivatedRequisition(_usuario!.idUsuario!);
+          .verfyActivatedRequisition(_usuario!.idRequisicaoAtiva!);
       //TODO melhor trazer retorno nulo quando id não encontrado
       _requisicao = requisicao;
       // initListener();
@@ -234,10 +233,7 @@ abstract class HomePassageiroControllerBase with Store {
       case LocationPermission.unableToDetermine:
         break;
     }
-    
-    await _getUserLocation();
-    await _getCameraUserLocationPosition();
-    await _getUserAddress();
+
   }
   
 
@@ -265,7 +261,7 @@ abstract class HomePassageiroControllerBase with Store {
           'meu local',
           10);
       _markers.add(myMarkerLocal);
-      showAllPositionsAndTraceRouter();
+      _showAllPositionsAndTraceRouter();
     }
   }
 
@@ -289,20 +285,23 @@ abstract class HomePassageiroControllerBase with Store {
         'Meu destino',
         90);
     _markers.add(myMarkerLocal);
-    showAllPositionsAndTraceRouter();
+    _showAllPositionsAndTraceRouter();
   }
 
   @action
-  Future<void> showAllPositionsAndTraceRouter() async {
-    if (isAddressNotNullOrEmpty) {
-      _mapsCameraService.moverCameraBound(
-          _myAddres!, _myDestination!, 60, controller);
-      await traceRouter();
-    } else {
+  Future<void> _showAllPositionsAndTraceRouter() async {
+     
+     if(!isAddressNotNullOrEmpty){
       if (_cameraPosition != null) {
         _mapsCameraService.moveCamera(_cameraPosition!, controller);
       }
-    }
+      return;
+     }
+     
+     _mapsCameraService.moverCameraBound(
+          _myAddres!, _myDestination!, 60, controller);
+      await _traceRouter();
+
   }
 
   @action
@@ -323,7 +322,7 @@ abstract class HomePassageiroControllerBase with Store {
   }
 
   @action
-  Future<void> traceRouter() async {
+  Future<void> _traceRouter() async {
     _polynesRouter = <Polyline>{};
     if (isAddressNotNullOrEmpty) {
       final polylinesData = await _tripService.getRoute(
@@ -363,6 +362,8 @@ abstract class HomePassageiroControllerBase with Store {
     final lat = _myDestination!.latitude;
     final long = _myDestination!.longitude;
 
+
+
     try {
       final destinationAddress =
           await _locationService.findDataLocationFromLatLong(lat, long);
@@ -373,15 +374,23 @@ abstract class HomePassageiroControllerBase with Store {
           motorista: null,
           passageiro: _usuario!,
           status: Status.AGUARDANDO,
-          valorCorrida: _tripSelected!.price);
+          valorCorrida: _tripSelected!.price,
+          );
 
       final requestId = await _requisitionSerivce.createRequisition(requisicao);
 
       final userUpadated = _usuario!.copyWith(
-          idRequisicaoAtiva: requestId, latitude: myLat, longitude: myLong);
+          idRequisicaoAtiva: requestId, 
+          latitude: myLat, 
+          longitude: myLong,
+          );
+
       await _userService.updateUser(userUpadated);
 
-      final requestUpdated = await _requisitionSerivce.updataDataRequisition(requisicao, {"idRequisicao": requestId, "passageiro": userUpadated});
+      final requestUpdated = await _requisitionSerivce.updataDataRequisition(
+        requisicao, {"idRequisicao": requestId, 
+        "passageiro": userUpadated.toMap()}
+        );
       _requisicao = requestUpdated;
       _usuario = userUpadated;
     } on RequestException catch (e, s) {
@@ -409,9 +418,10 @@ abstract class HomePassageiroControllerBase with Store {
     final isCancel = await _requisitionSerivce.cancelRequisition(_requisicao!);
     if (isCancel) {
       _requisicao = null;
+      streamSubscription.cancel();
     }
 
-    streamSubscription.cancel();
+    
   }
 
   // @action
@@ -459,7 +469,43 @@ abstract class HomePassageiroControllerBase with Store {
       }
     });
   }
+  
 
+  Future<void> statusVeifyRequest(Requisicao request) async{
+       switch(request.status){
+           case Status.AGUARDANDO:statusUberAguardando(request);
+            
+           case Status.A_CAMINHO:;
+           case Status.EM_VIAGEM:;
+           case Status.CONFIRMADA:;
+           case Status.FINALIZADO:;
+           case Status.CANCELADA: statusUberNaoChamdo();
+
+       }
+  }
+  Future<void> statusUberNaoChamdo()async{
+    _textoBotaoPadrao = "Procurar Motorista";
+    _exibirCaixasDeRotas = true;
+    _functionPadrao = (){};
+     await _getUserLocation();
+     await _getCameraUserLocationPosition();
+     await _getUserAddress();
+
+     //TODO atualizar idRequisiçao ativa no usuario e LatLong do usuario;
+
+  }
+
+  Future<void> statusUberAguardando(Requisicao request) async{
+    _textoBotaoPadrao = "Cancelar";
+    _exibirCaixasDeRotas = false;
+     getActiveTripData(request);
+    _functionPadrao =   cancelarUber;
+   
+
+    
+     _showAllPositionsAndTraceRouter();
+    
+  } 
   void dispose() {
     streamSubscription.cancel();
   }

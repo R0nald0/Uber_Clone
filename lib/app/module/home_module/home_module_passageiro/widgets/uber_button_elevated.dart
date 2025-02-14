@@ -3,18 +3,21 @@ part of '../home_page_passageiro.dart';
 class UberButtonElevated extends StatelessWidget {
 
   final VoidCallback functionPadrao;
-  final Widget textoPadrao;
-  final Color corDoBotaoPadrao;
+  final String textoPadrao;
+  final String statusRequisicao;
 
   const UberButtonElevated(
       {super.key,
-     
+      
       required this.functionPadrao,
       required this.textoPadrao,
-      required this.corDoBotaoPadrao});
+      this.statusRequisicao =Status.NAO_CHAMADO
+      });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Positioned(
       right: 0,
       left: 0,
@@ -23,14 +26,22 @@ class UberButtonElevated extends StatelessWidget {
         padding: const EdgeInsets.only(left: 60, right: 60),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-              backgroundColor: corDoBotaoPadrao,
+              backgroundColor: statusRequisicao !=  Status.AGUARDANDO ? Colors.black : Colors.red,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
               textStyle:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: Colors.white)),
+                   const TextStyle(
+                    fontSize: 18, 
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white
+                    )),
           onPressed: () {functionPadrao();},
-          child: textoPadrao,
+          child: Text(textoPadrao,
+             style: const TextStyle(
+               color: Colors.white,
+             ),
+          ),
         ),
       ),
     );
