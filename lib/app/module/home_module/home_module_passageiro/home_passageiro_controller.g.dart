@@ -308,6 +308,24 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
     });
   }
 
+  late final _$_statusRequisicaoAtom = Atom(
+      name: 'HomePassageiroControllerBase._statusRequisicao', context: context);
+
+  String get statusRequisicao {
+    _$_statusRequisicaoAtom.reportRead();
+    return super._statusRequisicao;
+  }
+
+  @override
+  String get _statusRequisicao => statusRequisicao;
+
+  @override
+  set _statusRequisicao(String value) {
+    _$_statusRequisicaoAtom.reportWrite(value, super._statusRequisicao, () {
+      super._statusRequisicao = value;
+    });
+  }
+
   late final _$_getCameraUserLocationPositionAsyncAction = AsyncAction(
       'HomePassageiroControllerBase._getCameraUserLocationPosition',
       context: context);

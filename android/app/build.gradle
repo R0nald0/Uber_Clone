@@ -48,6 +48,10 @@ android {
     }
 
     defaultConfig {
+         manifestPlaceholders = [
+         maps_Api_key: project.hasProperty("maps_Api_key") ? project.maps_Api_key : ""
+        ]
+
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.example.uber"
         minSdk = 23

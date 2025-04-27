@@ -29,7 +29,9 @@ abstract class LoginControllerBase with Store {
       final isSuccess = await _authService.login(email, password);
       if (isSuccess) {
         _hasSuccessLogin  = isSuccess;
+        return;
       }
+     _hasSuccessLogin =false;
     } on UserException catch (e) {
       _errorMensage = e.message;
     }

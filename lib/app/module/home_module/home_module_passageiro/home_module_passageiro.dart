@@ -1,9 +1,7 @@
 import 'package:flutter_getit/flutter_getit.dart';
-
 import 'package:uber/app/module/core/authentication_controller.dart';
 import 'package:uber/app/module/home_module/home_module_passageiro/home_page_passageiro.dart';
 import 'package:uber/app/module/home_module/home_module_passageiro/home_passageiro_controller.dart';
-import 'package:uber_clone_core/uber_clone_core.dart';
 
 class HomeModulePassageiro extends FlutterGetItModuleRouter {
   HomeModulePassageiro()

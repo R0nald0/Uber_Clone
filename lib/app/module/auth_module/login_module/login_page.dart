@@ -13,25 +13,25 @@ class LoginPage extends StatefulWidget {
   State<StatefulWidget> createState() => LoginPageState();
 }
 
-class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
+class LoginPageState extends State<LoginPage>  with DialogLoader {
   final _controllerEmail = TextEditingController();
   final _controllerSenha = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
    final reactions = <ReactionDisposer>[];
-  String erroMensagem = "";
+    String erroMensagem = "";
 
   initReaction() {
-   final errorReactionDispose =
-        reaction<String?>((_) => widget.loginController.errorMensage, (erro) {
+   final errorReactionDispose =reaction<String?>((_) => widget.loginController.errorMensage, (erro) {
       if (erro != null && erro.isNotEmpty) {
-        callSnackBar(erro);
+       callSnackBar(erro);
       }
     });
 
-    final reactionSuccesLogin = reaction((_)=>widget.loginController.hasSuccessLogin, (success){
-         if (success! && success) {
-           Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_LOGIN,(_) =>false);
+    final reactionSuccesLogin = reaction<bool?>((_)=>widget.loginController.hasSuccessLogin, (success){
+         if (success == true) {
+          hideLoader();
+           Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_VIEWPASSAGEIRO,(_)=> false);
          } 
     });
 
@@ -41,8 +41,10 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
 
   @override
   void initState() {
-    initReaction();
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+       initReaction();
+    });
   }
 
   @override
@@ -59,6 +61,8 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    initReaction();
     return Scaffold(
       body: Container(
           padding: const EdgeInsets.all(16),
@@ -130,22 +134,23 @@ class LoginPageState extends State<LoginPage> with DialogLoader<LoginPage> {
               textStyle: const TextStyle(fontSize: 20),
             ),
             onPressed: () async {
-              FocusNode().requestFocus();
-              showLoaderDialog();
+              FocusNode().requestFocus(); 
+              
               final isValid = formState.currentState?.validate() ?? false;
               if (isValid) {
                  final email = _controllerEmail.text;
                  final ssenha = _controllerSenha.text;
+                 showLoaderDialog();
                  await loginController.login(email,ssenha );
               }
-              hideLoader();
+             
             },
             child: const Text("Login"),
           ),
         ),
         TextButton(
             onPressed: () {
-              Navigator.of(context).pushNamed(Rotas.ROUTE_REGISTER);
+              Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_VIEWPASSAGEIRO,(_)=>false);
             },
             child: const Text(
               "Nao tem conta, Cadastre-se!! ",
