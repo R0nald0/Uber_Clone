@@ -30,8 +30,7 @@ class SplashScreenState extends State<SplashScreen> with DialogLoader {
     final reactionDisposerAuth = reaction<String?>((_) => widget._auth.errorMessage, (erro) {
       if (erro != null) {
         callSnackBar(erro);
-        Navigator.pushNamedAndRemoveUntil(
-            context, Rotas.ROUTE_LOGIN, (_) => false);
+        Navigator.of(context).pushNamedAndRemoveUntil( Rotas.ROUTE_LOGIN, (_) => false);
       }
     });
     final reactionUserId = reaction<String?>((_) => widget._auth.idUser, (id){

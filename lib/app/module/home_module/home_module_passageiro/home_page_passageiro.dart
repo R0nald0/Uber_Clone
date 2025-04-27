@@ -1,23 +1,22 @@
-import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lottie/lottie.dart' as lotiie;
 import 'package:mobx/mobx.dart';
+import 'package:uber/Rotas.dart';
 import 'package:uber/app/module/core/widgets/uber_list_trip.dart';
 import 'package:uber/app/module/home_module/home_module_passageiro/home_passageiro_controller.dart';
 import 'package:uber_clone_core/uber_clone_core.dart';
 import 'package:validatorless/validatorless.dart';
 
 part 'widgets/uber_button_elevated.dart';
+part 'widgets/dialog_find_driver.dart';
 
 class HomePassageiroPage extends StatefulWidget {
   final HomePassageiroController homePassageiroController;
-
   const HomePassageiroPage({super.key, required this.homePassageiroController});
+  
 
   @override
   State<StatefulWidget> createState() => HomePassageiroPageState();
@@ -31,24 +30,19 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
   CameraPosition positionCan =
       const CameraPosition(target: LatLng(-13.008864, -38.528722), zoom: 12);
 
-
   final formKey = GlobalKey<FormState>();
   List<String> listMenu = ["Configuraçoes", "Deslogar"];
-  
- 
-
 
   void initReaction() async {
-   
-   
-
+     
     final userReaction = reaction<Usuario?>(
         (_) => widget.homePassageiroController.usuario, (usuario) async {
-      if (usuario != null) {
-        await widget.homePassageiroController.verfyActivatedRequisition();
-      }
+        if (usuario == null) {
+           Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_LOGIN, (_)=> false);
+           return;
+        } 
     });
-   
+
     final erroReaction = reaction<String?>(
         (_) => widget.homePassageiroController.errorMensager, (error) {
       if (error != null) {
@@ -57,15 +51,11 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     });
 
     final requicaoReaction = reaction<Requisicao?>(
-        (_) => widget.homePassageiroController.requisicao, (requisicao) {
-      if (requisicao == null || requisicao.id == null) {
-        // _statusUberNaoChamdo();
+        (_) => widget.homePassageiroController.requisicao, (requisicao) async {
+      if (requisicao == null || requisicao.id == null)  {
+        widget.homePassageiroController.statusUberNaoChamdo(); 
       } else {
-        //  _idRequisicao = requisicao.id!;
-        widget.homePassageiroController.showAllPositionsAndTraceRouter();
-
-        widget.homePassageiroController.getActiveTripData(requisicao);
-        //  _listenerRequisicao(_idRequisicao);
+        widget.homePassageiroController.statusVeifyRequest(requisicao);
       }
     });
 
@@ -76,7 +66,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
         callSnackBar("Ativse sua localização");
       }
     });
-
+            
     final locationPermissionReaction = reaction<LocationPermission?>(
         (_) => widget.homePassageiroController.locationPermission,
         (permission) {
@@ -92,18 +82,11 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
       }
       hideLoader();
     });
-
-    /* final stateTripReaction = reaction<String>(
-        (_) => widget.homePassageiroController.statusTrip, (stateTrip) {
-         verifyTripState(stateTrip);
-    }); */
-    widget.homePassageiroController.getDataUSerOn();
-   
-          showLoaderDialog();
-          await widget.homePassageiroController.getPermissionLocation();
-          hideLoader();
+ 
+       showLoaderDialog();
+       await widget.homePassageiroController.getDataUSerOn();
+       hideLoader();
   
-
     disposerReactions.addAll([
       erroReaction,
       userReaction,
@@ -113,7 +96,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     ]);
   }
 
-  void CallBottomTrips() {
+  void callBottomTrips() {
     showModalBottomSheet(
       enableDrag: true,
       context: context,
@@ -140,7 +123,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       initReaction();
     });
   }
@@ -160,7 +143,12 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                 },
                 icon: const Icon(Icons.my_location)),
             PopupMenuButton<String>(
-                onSelected: (String escolhaMenu) {},
+                onSelected: (String escolhaMenu) {
+                   switch(escolhaMenu){
+                    case "Deslogar" : widget.homePassageiroController.deslogar();
+                    case "Configuraçoes" :(){};
+                   }
+                },
                 itemBuilder: (context) => listMenu.map((String item) {
                       return PopupMenuItem(
                         value: item,
@@ -192,9 +180,9 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                 }),
                 Observer(builder: (context) {
                   return Visibility(
+                    replacement: const SizedBox.shrink(),
                     visible:
-                        widget.homePassageiroController.exibirCaixasDeRotas ??
-                            true,
+                        widget.homePassageiroController.exibirCaixasDeRotas ?? true   ,
                     child: Form(
                       key: formKey,
                       child: Stack(
@@ -210,8 +198,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                                     Observer(builder: (context) {
                                       return UberAutoCompleterTextField(
                                         key: UniqueKey(),
-                                        hintText: widget.homePassageiroController
-                                            .myAddres?.nomeDestino,
+                                        hintText: widget.homePassageiroController .myAddres
+                                            ?.nomeDestino,
                                         prefIcon: const Icon(
                                           Icons.location_on_rounded,
                                           color: Colors.green,
@@ -230,7 +218,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                                               .setNameMyLocal(myActualAddrees);
                                         },
                                         lastAddress: widget
-                                            .homePassageiroController.addresList,
+                                            .homePassageiroController
+                                            .addresList,
                                       );
                                     }),
                                     Padding(
@@ -274,39 +263,33 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                     ),
                   );
                 }),
-                widget.homePassageiroController.requisicao?.status ==
-                        Status.AGUARDANDO
-                    ? Center(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          width: MediaQuery.of(context).size.width / 1.3,
-                          height: MediaQuery.of(context).size.height / 5,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(32)),
-                          child: Column(
-                            children: [
-                              Text('Buscando Motorista',
-                                  style: Theme.of(context).textTheme.titleMedium),
-                              SizedBox(
-                                  height:
-                                      MediaQuery.of(context).size.height / 7.5,
-                                  child: lotiie.Lottie.asset(
-                                      UberCloneConstants.LOTTI_ASSET_FIND_DRIVER))
-                            ],
-                          ),
-                        ),
-                      )
-                    : const SizedBox.shrink(),
-                UberButtonElevated(
-                    functionPadrao: () {
-                      final isValid = formKey.currentState?.validate() ?? false;
-                      if (isValid) {
-                         CallBottomTrips();
-                      }
-                    },
-                    textoPadrao: const Text("Procurar Motorista"),
-                    corDoBotaoPadrao: Colors.black),
+                Observer(builder: (context)  {
+                  return widget.homePassageiroController.statusRequisicao == Status.AGUARDANDO 
+                     ?DialogFindDriver(onPressed:widget.homePassageiroController.cancelarUber)
+                     :const SizedBox.shrink() ; 
+                }),
+                Visibility(
+                  visible:  widget.homePassageiroController.exibirCaixasDeRotas ?? true,
+                  child: Observer(
+                    builder: (context) {
+                      return UberButtonElevated(
+                        
+                        functionPadrao: widget.homePassageiroController.statusRequisicao == Status.NAO_CHAMADO ? () {
+                              final isValid = formKey.currentState?.validate() ?? false;
+                              if (isValid) {
+                                 callBottomTrips();
+                              }  
+                        }
+                         :widget.homePassageiroController.functionPadrao!(),
+                        textoPadrao:
+                            widget.homePassageiroController.textoBotaoPadrao ??
+                                "Procurar Motorista",
+                        statusRequisicao:  widget.homePassageiroController.statusRequisicao 
+                          
+                      );
+                    }
+                  ),
+                ),
               ],
             ),
           ),
@@ -318,8 +301,10 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     for (var reaction in disposerReactions) {
       reaction();
     }
+    
 
-    widget.homePassageiroController.dispose();
+   // widget.homePassageiroController.dispose();
     super.dispose();
   }
 }
+
