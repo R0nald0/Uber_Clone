@@ -1,3 +1,4 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
 import 'package:uber/Rotas.dart';
@@ -15,7 +16,7 @@ class SplashScreen extends StatefulWidget {
 
 class SplashScreenState extends State<SplashScreen> with DialogLoader {
   final reactionDisposer = <ReactionDisposer>[];
-
+   String routeTo ='';
   @override
   void initState() {
     super.initState();
@@ -23,25 +24,25 @@ class SplashScreenState extends State<SplashScreen> with DialogLoader {
     WidgetsBinding.instance.addPostFrameCallback((_)  {
        initReactions();
     });
-
   }
 
   Future<void> initReactions() async {
     final reactionDisposerAuth = reaction<String?>((_) => widget._auth.errorMessage, (erro) {
       if (erro != null) {
         callSnackBar(erro);
-        Navigator.of(context).pushNamedAndRemoveUntil( Rotas.ROUTE_LOGIN, (_) => false);
+        Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_LOGIN, (_) => false);
+           routeTo = Rotas.ROUTE_LOGIN;
       }
     });
     final reactionUserId = reaction<String?>((_) => widget._auth.idUser, (id){
         if (  id !=null && id.isNotEmpty) {
-        Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_VIEWPASSAGEIRO, (_) => false,);
+        routeTo = Rotas.ROUTE_VIEWPASSAGEIRO;
       }else{
-         Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_LOGIN, (_) => false);
+         routeTo = Rotas.ROUTE_LOGIN;
       }
     });
 
-    widget._auth.verifyStateUserLogged();
+    await widget._auth.verifyStateUserLogged();
 
     reactionDisposer.addAll([reactionUserId, reactionDisposerAuth]);
   }
@@ -62,22 +63,55 @@ class SplashScreenState extends State<SplashScreen> with DialogLoader {
         decoration: const BoxDecoration(
           color: Colors.black87,
         ),
-        child:  const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 70,
-            children: <Widget>[
-              CircleAvatar(
-                radius: 100,
-                backgroundImage: AssetImage("images/logo.png"),
-              ),
-              LinearProgressIndicator(
-                color: Colors.blue,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+               Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          spacing: 10,
+          children: <Widget>[
+            const CircleAvatar(
+              radius: 100,
+              backgroundImage: AssetImage(UberCloneConstants.ASSEESTS_IMAGE_LOGO),
+            ),
+            SizedBox(
+              height: 20,
+              child: DefaultTextStyle(
+                style:const TextStyle(
+                  fontSize: 20,
+                  color:Colors.white,
+                  fontFamily:'Courgette',
+                ) , 
+                child: AnimatedTextKit(
+                  isRepeatingAnimation: false,
+                   animatedTexts:  [
+                    TypewriterAnimatedText('Clone..',
+                    cursor: ".",
+                    speed: const Duration(milliseconds: 300 ),
+                    ),
+                   ], 
+                  onFinished: (){
+                    if (routeTo.isNotEmpty) {
+                       Navigator.of(context).pushNamedAndRemoveUntil(routeTo, (_) => false,);
+                    }
+                  },
+                  )
+                ),
+            ),
+            
+          ],
+        ),
+        const Align(
+              alignment: Alignment.bottomCenter,
+              child: LinearProgressIndicator(
+                color: Colors.black,
+                backgroundColor: Colors.white,
                 minHeight: 2,
               ),
-            ],
-          ),
-        ),
+            ),
+          ],
+        )
       ),
     );
   }

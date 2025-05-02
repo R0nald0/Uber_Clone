@@ -37,7 +37,7 @@ class _MainWidgetState extends State<MainWidget> {
   }
   @override
   Widget build(BuildContext context) {
-  
+     
     return  UberCloneCoreConfig(
       title: "Uber Passageiro", 
       initialRoute:'/SplashModule/home' ,

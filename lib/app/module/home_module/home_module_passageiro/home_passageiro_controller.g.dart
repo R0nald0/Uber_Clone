@@ -326,6 +326,15 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
     });
   }
 
+  late final _$_getUserAddressAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase._getUserAddress',
+      context: context);
+
+  @override
+  Future<void> _getUserAddress() {
+    return _$_getUserAddressAsyncAction.run(() => super._getUserAddress());
+  }
+
   late final _$_getCameraUserLocationPositionAsyncAction = AsyncAction(
       'HomePassageiroControllerBase._getCameraUserLocationPosition',
       context: context);

@@ -74,7 +74,7 @@ class LoginPageState extends State<LoginPage>  with DialogLoader {
                    const CircleAvatar(
                     radius: 120,
                     backgroundColor: null,
-                    backgroundImage: AssetImage('images/logo.png'),
+                    backgroundImage: AssetImage(UberCloneConstants.ASSEESTS_IMAGE_LOGO),
                   ),
                  
                   camposLoginTxtV(_formKey),

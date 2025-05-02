@@ -125,6 +125,10 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       initReaction();
+      widget.homePassageiroController.getTokenDevice();
+      widget.homePassageiroController.listenMessage();
+      widget.homePassageiroController.listenToken();
+      widget.homePassageiroController.getMessgeBAckGround();
     });
   }
 
@@ -301,9 +305,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     for (var reaction in disposerReactions) {
       reaction();
     }
-    
-
-   // widget.homePassageiroController.dispose();
+  
+   widget.homePassageiroController.dispose();
     super.dispose();
   }
 }

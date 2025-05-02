@@ -21,6 +21,8 @@ class HomeModulePassageiro extends FlutterGetItModuleRouter {
                 bindings: [
                   Bind.lazySingleton<HomePassageiroController>(
                     (i) => HomePassageiroController(
+                        notificationService: i(),
+                        firebaseNotificationService: i(),
                         addressService: i(),
                         authService: i(),
                         userService: i(),
