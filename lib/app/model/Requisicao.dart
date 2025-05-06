@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uber/controller/Banco.dart';
-import 'package:uber/model/Destino.dart';
+import 'package:uber/app/model/Destino.dart';
 
 import 'Usuario.dart';
 

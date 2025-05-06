@@ -2,35 +2,40 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/intl.dart';
 import 'package:uber/Rotas.dart';
+import 'package:uber/app/module/core/authentication_controller.dart';
+import 'package:uber/app/module/home_module/home_module_passageiro/home_passageiro_controller.dart';
 import 'package:uber/controller/Banco.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:uber/model/Destino.dart';
-import 'package:uber/model/Marcador.dart';
-import 'package:uber/model/Requisicao.dart';
-import 'package:uber/model/Usuario.dart';
-import 'package:uber/util/Status.dart';
-import 'package:uber/util/UsuarioFirebase.dart';
+import 'package:uber/app/model/Destino.dart';
+import 'package:uber/app/model/Marcador.dart';
+import 'package:uber/app/model/Requisicao.dart';
+import 'package:uber/app/model/Usuario.dart';
+import 'package:uber/app/util/Status.dart';
+import 'package:uber/app/util/UsuarioFirebase.dart';
 
-class ViewPassageiro extends StatefulWidget {
+class HomePassageiroPage extends StatefulWidget {
+  const HomePassageiroPage({super.key});
+
   @override
-  State<StatefulWidget> createState() => ViewPassageiroState();
+  State<StatefulWidget> createState() => HomePassageiroPageState();
 }
 
-class ViewPassageiroState extends State<ViewPassageiro> {
-  Completer<GoogleMapController> _controller = Completer();
-  CameraPosition positionCan = CameraPosition(target: LatLng(-13.008864, -38.528722), zoom: 17);
-  Set<Marker> _marcador = {};
+class HomePassageiroPageState extends State<HomePassageiroPage> {
+  final Completer<GoogleMapController> _controller = Completer();
+
+  CameraPosition positionCan = const CameraPosition(target: LatLng(-13.008864, -38.528722), zoom: 17);
+  final Set<Marker> _marcador = {};
   late BitmapDescriptor imgPassageiro;
-  TextEditingController _controllerDestino =
+  final TextEditingController _controllerDestino =
       TextEditingController(text: "farol da barra");
   List<String> listMenu = ["Configuraçoes", "Deslogar"];
-  late StreamSubscription<DocumentSnapshot> streamSubscription ;
+ // late StreamSubscription<DocumentSnapshot> streamSubscription ;
 
   //DADOS Passageiro
   String meuLoca = "";
@@ -41,7 +46,7 @@ class ViewPassageiroState extends State<ViewPassageiro> {
 
   // Elementos da view
   bool _exibirCaixasDeRotas = false;
-  late Widget _textoBotaoPadrao = CircularProgressIndicator(
+  late Widget _textoBotaoPadrao = const CircularProgressIndicator(
     color: Colors.white,
   );
   late Color _corBotaoPadrao = Colors.white12;
@@ -61,17 +66,18 @@ class ViewPassageiroState extends State<ViewPassageiro> {
   }
 
   _moverCameraBound(LatLngBounds latLngBounds) async {
-    GoogleMapController _controllerBouds = await _controller.future;
-    _controllerBouds
+    GoogleMapController controllerBouds = await _controller.future;
+    controllerBouds
         .animateCamera(CameraUpdate.newLatLngBounds(latLngBounds, 100));
   }
 
-  _escolhaMenu(String escolha) {
+  _escolhaMenu(String escolha,AuthenticationController controller) {
     switch (escolha) {
       case "Configurações":
         break;
       case "Deslogar":
-        _deslogarUsuario();
+         controller.logout();
+       // _deslogarUsuario();
         break;
     }
   }
@@ -79,7 +85,7 @@ class ViewPassageiroState extends State<ViewPassageiro> {
   _deslogarUsuario() {
     Banco.auth.signOut();
     Navigator.pushNamedAndRemoveUntil(
-        context, Rotas.ROUTE_HOME, (route) => false);
+        context, Rotas.ROUTE_LOGIN, (route) => false);
   }
 
   _exibirPosicoesMarcadores(Marcador marcadorOrigem, Marcador marcadorDestino) {
@@ -108,6 +114,8 @@ class ViewPassageiroState extends State<ViewPassageiro> {
     }
 
     Position destinoPosition = Position(
+      altitudeAccuracy: 0,
+      headingAccuracy: 0,
         longitude: passLongitude,
         latitude: passLatitude,
         timestamp: DateTime.now(),
@@ -117,6 +125,8 @@ class ViewPassageiroState extends State<ViewPassageiro> {
         speed: 0,
         speedAccuracy: 0);
     _localMotorista = Position(
+      altitudeAccuracy: 0,
+      headingAccuracy: 0,
         longitude: motLongitude,
         latitude: motLatitude,
         timestamp: DateTime.now(),
@@ -142,7 +152,7 @@ class ViewPassageiroState extends State<ViewPassageiro> {
       double config = MediaQuery.of(context).devicePixelRatio;
       await BitmapDescriptor.fromAssetImage(
               ImageConfiguration(devicePixelRatio: config),
-              "images/${caminho}.png")
+              "images/$caminho.png")
           .then((ic) {
         crirarMarcador(position, ic, caminho, titulo);
       });
@@ -163,14 +173,14 @@ class ViewPassageiroState extends State<ViewPassageiro> {
           context: context,
           builder:(contex)=>AlertDialog(
 
-              title:Center(
+              title:const Center(
                 child: Text("Valor a ser pago"),
               ),
                content: Column(mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Center(
-                      child: Text("R\$ ${valor}",
-                        style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25),
+                      child: Text("R\$ $valor",
+                        style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 25),
                       ),
                     ),
                   ],
@@ -178,11 +188,11 @@ class ViewPassageiroState extends State<ViewPassageiro> {
                actions: [
                   Row(mainAxisAlignment: MainAxisAlignment.end,
                     children: <Widget>[
-                      TextButton(onPressed: (){}, child: Text("Mudar forma de pagamento")),
+                      TextButton(onPressed: (){}, child: const Text("Mudar forma de pagamento")),
                       TextButton(onPressed: (){
                          Navigator.pop(context);
                         _statusUberNaoChamdo();
-                        }, child: Text("Pagar"))
+                        }, child: const Text("Pagar"))
                     ],
                   )
                ],
@@ -194,7 +204,7 @@ class ViewPassageiroState extends State<ViewPassageiro> {
     return showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              title: Text("Dados da viagem"),
+              title: const Text("Dados da viagem"),
               content: Column(mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Text(
@@ -203,16 +213,16 @@ class ViewPassageiroState extends State<ViewPassageiro> {
                     "Rua : ${destino.rua},${destino.numero}\n"
                     "Cep : ${destino.cep}\n"
                     "Endereço : ${destino.nomeDestino}\n",
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                     )
                   ),
 
                   Center(
                     child: Container(
-                      padding: EdgeInsets.all(10),
-                      child: Text("R\$ ${valorDaCorrida}",
-                      style: TextStyle(
+                      padding: const EdgeInsets.all(10),
+                      child: Text("R\$ $valorDaCorrida",
+                      style: const TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
                       ),
@@ -230,7 +240,7 @@ class ViewPassageiroState extends State<ViewPassageiro> {
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: Text(
+                        child: const Text(
                           "Cancelar",
                           style: TextStyle(color: Colors.red),
                         )),
@@ -239,7 +249,7 @@ class ViewPassageiroState extends State<ViewPassageiro> {
                           _salvarRequisicao(destino,valorDaCorrida);
                           Navigator.pop(context);
                         },
-                        child: Text("Confirmar",
+                        child: const Text("Confirmar",
                             style: TextStyle(color: Colors.green))),
                   ],
                 )
@@ -260,14 +270,14 @@ class ViewPassageiroState extends State<ViewPassageiro> {
   _statusUberNaoChamdo() {
     _getPermissionLocation();
     _exibirCaixasDeRotas = true;
-    _alterarBotoes(Text("ChamarUber"), Colors.black, () {
+    _alterarBotoes(const Text("ChamarUber"), Colors.black, () {
       _chamarUber();
     });
   }
 
   _statusUberAguardando() async {
     _exibirCaixasDeRotas = false;
-    _alterarBotoes(Text("Cancelar"), Colors.red, () {
+    _alterarBotoes(const Text("Cancelar"), Colors.red, () {
       _cancelarUber();
     });
 
@@ -280,6 +290,8 @@ class ViewPassageiroState extends State<ViewPassageiro> {
     double longPass = _dadosRequisicaoPassageiro['longitude'];
 
     _localPassageiros = Position(
+      altitudeAccuracy: 0,
+      headingAccuracy: 0,
         longitude: longPass,
         latitude: latPass,
         timestamp: DateTime.now(),
@@ -316,10 +328,10 @@ class ViewPassageiroState extends State<ViewPassageiro> {
     _alterarBotoes(
         Column(children: <Widget>[
           Text(
-            "Motorista ${nomeMotorista} á Caminho....... ",
-            style: TextStyle(color: Colors.black),
+            "Motorista $nomeMotorista á Caminho....... ",
+            style: const TextStyle(color: Colors.black),
           ),
-          Padding(
+          const Padding(
             padding: EdgeInsets.fromLTRB(16, 13, 16, 13),
             child: LinearProgressIndicator(
               minHeight: 6,
@@ -352,7 +364,7 @@ class ViewPassageiroState extends State<ViewPassageiro> {
 
     _exibirPosicoesMarcadores(marcadorOrigem, marcadorDestino);
 
-    _alterarBotoes(Text("Á caminho de ${destino}"), _corBotaoPadrao, () {});
+    _alterarBotoes(Text("Á caminho de $destino"), _corBotaoPadrao, () {});
   }
 
   _statusFinalizado() async {
@@ -363,6 +375,8 @@ class ViewPassageiroState extends State<ViewPassageiro> {
 
     Position positioFinal = Position(longitude:longDestino, latitude: latDestino,
         timestamp: DateTime.now(),
+        altitudeAccuracy: 0,
+        headingAccuracy: 0,
         accuracy:  0,
         altitude: 18,
         heading: 0,
@@ -398,44 +412,46 @@ class ViewPassageiroState extends State<ViewPassageiro> {
   @override
   void initState() {
     super.initState();
-    _recuperarDadosPassageiro();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+       _recuperarDadosPassageiro();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+     final authController = Modular.get<AuthenticationController>();
+
     return Scaffold(
         appBar: AppBar(
-          title: Text("Passgeiro"),
+          title: const Text("Passgeiro"),
           actions: <Widget>[
             IconButton(
                 onPressed: () {
-                  _getLastPosition();
+                 // _getLastPosition();
                 },
-                icon: Icon(Icons.my_location)),
+                icon: const Icon(Icons.my_location)),
             PopupMenuButton<String>(
-                onSelected: _escolhaMenu,
+                onSelected: (String escolhaMenu){
+                     _escolhaMenu(escolhaMenu,authController);
+                },
                 itemBuilder: (context) => listMenu.map((String item) {
                       return PopupMenuItem(
-                        child: Text(item),
                         value: item,
+                        child: Text(item),
                       );
                     }).toList())
           ],
         ),
         body: Container(
-          padding: EdgeInsets.all(1),
+          padding: const EdgeInsets.all(1),
           child: Stack(
             children: <Widget>[
-              GoogleMap(
-                initialCameraPosition: positionCan,
-                mapType: MapType.normal,
-                //myLocationEnabled: true,
-                myLocationButtonEnabled: false,
-                onMapCreated: _onMapCreated,
-                markers: _marcador,
+              const GoogleMap(initialCameraPosition: CameraPosition(
+                target:LatLng(37.43296265331129, -122.08832357078792),
+                ),
               ),
-              Visibility(
-                  visible: _exibirCaixasDeRotas,
+              Visibility(                 
+                 visible: _exibirCaixasDeRotas,
                   child: Stack(
                     children: [
                       Positioned(
@@ -443,56 +459,54 @@ class ViewPassageiroState extends State<ViewPassageiro> {
                           left: 0,
                           right: 0,
                           child: Padding(
-                            padding: EdgeInsets.all(15),
-                            child: Container(
-                              child: Column(
-                                children: <Widget>[
-                                  TextField(
+                            padding: const EdgeInsets.all(15),
+                            child: Column(
+                              children: <Widget>[
+                                TextField(
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    hintText: meuLoca,
+                                    fillColor: Colors.white,
+                                    filled: true,
+                                    hintMaxLines: 2,
+                                    contentPadding:
+                                        const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                                    prefixIcon: const Icon(
+                                      Icons.location_on_rounded,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                  keyboardType: TextInputType.streetAddress,
+                                  enabled: false,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: TextField(
+                                    controller: _controllerDestino,
                                     decoration: InputDecoration(
                                       border: OutlineInputBorder(
                                           borderRadius:
                                               BorderRadius.circular(12)),
-                                      hintText: meuLoca,
+                                      hintText: "Escolha seu Destino",
                                       fillColor: Colors.white,
                                       filled: true,
-                                      hintMaxLines: 2,
                                       contentPadding:
-                                          EdgeInsets.fromLTRB(16, 8, 16, 8),
-                                      prefixIcon: Icon(
-                                        Icons.location_on_rounded,
-                                        color: Colors.green,
+                                          const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                                      prefixIcon: const Icon(
+                                        Icons.local_taxi,
+                                        color: Colors.black,
                                       ),
                                     ),
                                     keyboardType: TextInputType.streetAddress,
-                                    enabled: false,
                                   ),
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 10),
-                                    child: TextField(
-                                      controller: _controllerDestino,
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12)),
-                                        hintText: "Escolha seu Destino",
-                                        fillColor: Colors.white,
-                                        filled: true,
-                                        contentPadding:
-                                            EdgeInsets.fromLTRB(16, 8, 16, 8),
-                                        prefixIcon: Icon(
-                                          Icons.local_taxi,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      keyboardType: TextInputType.streetAddress,
-                                    ),
-                                  )
-                                ],
-                              ),
+                                )
+                              ],
                             ),
                           )),
                     ],
-                  )),
+                  ),),
               _posicionaComponentesBtn()
             ],
           ),
@@ -505,7 +519,7 @@ class ViewPassageiroState extends State<ViewPassageiro> {
 
   getLocationUser() async {
     LocationSettings locationSettings =
-        LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 5);
+        const LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 5);
 
     StreamSubscription<Position> positionSt = await Geolocator.getPositionStream(
       locationSettings: locationSettings,
@@ -521,8 +535,8 @@ class ViewPassageiroState extends State<ViewPassageiro> {
 
   _getPermissionLocation() async {
     LocationPermission permission = await Geolocator.checkPermission();
-    ;
-    bool isServceAcept = await Geolocator.isLocationServiceEnabled();
+  
+    /* bool isServceAcept = await Geolocator.isLocationServiceEnabled();
     if (isServceAcept) {
       _getLastPosition();
     }
@@ -546,11 +560,11 @@ class ViewPassageiroState extends State<ViewPassageiro> {
 
       default:
         _getLastPosition();
-    }
+    } */
   }
 
   _getLastPosition() async {
-     LocationSettings locationSettings = LocationSettings(
+     LocationSettings locationSettings = const LocationSettings(
        accuracy: LocationAccuracy.high,distanceFilter: 10
      );
 
@@ -595,8 +609,8 @@ class ViewPassageiroState extends State<ViewPassageiro> {
   _salvarRequisicao(Destino destino,String valorFinalCorrida) async {
     Usuario usuario = await UsuarioFirebase.recuperarDadosPassageiro();
 
-    usuario.latitude = _localPassageiros.latitude;
-    usuario.longitude = _localPassageiros.longitude;
+    usuario.copyWith(latitude: _localPassageiros.latitude);
+    usuario.copyWith(longitude: _localPassageiros.longitude);
 
     Requisicao requisicao = Requisicao();
     requisicao.destino = destino;
@@ -616,7 +630,7 @@ class ViewPassageiroState extends State<ViewPassageiro> {
 
     //salvar dados da requisicao activa
     _salvarRequisicaoAtiva(_idRequisicao, idUser);
-    _listenerRequisicao(_idRequisicao);
+   // _listenerRequisicao(_idRequisicao);
   }
 
   _salvarRequisicaoAtiva(String requiscaoId, String usarioId) async {
@@ -637,13 +651,13 @@ class ViewPassageiroState extends State<ViewPassageiro> {
 
     if (snapshot.data() != null) {
       _idRequisicao = snapshot.get('id_requisisicao');
-      _listenerRequisicao(_idRequisicao);
+     // _listenerRequisicao(_idRequisicao);
     } else {
       _statusUberNaoChamdo();
     }
   }
 
-  _listenerRequisicao(String idRequisicao) async {
+  /* _listenerRequisicao(String idRequisicao) async {
      streamSubscription =await Banco.db
         .collection("requisicao")
         .doc(idRequisicao)
@@ -681,21 +695,21 @@ class ViewPassageiroState extends State<ViewPassageiro> {
       }
     });
   }
-
+ */
   _posicionaComponentesBtn() {
     return Positioned(
       right: 0,
       left: 0,
       bottom: 30,
       child: Padding(
-        padding: EdgeInsets.only(left: 60, right: 60),
+        padding: const EdgeInsets.only(left: 60, right: 60),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-              primary: _corBotaoPadrao,
+              backgroundColor: _corBotaoPadrao,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-              padding: EdgeInsets.fromLTRB(32, 16, 32, 16),
-              textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           onPressed: () {
             _functionPadrao();
           },
@@ -717,9 +731,9 @@ class ViewPassageiroState extends State<ViewPassageiro> {
       Banco.db.collection("requisicao-ativa").doc(idUser).delete();
     });
 
-    if(streamSubscription != null){
+   /*  if(streamSubscription != null){
           streamSubscription.cancel();
-    }
+    } */
   }
 
   _chamarUber() async {
@@ -751,17 +765,17 @@ class ViewPassageiroState extends State<ViewPassageiro> {
   }
 
   _confirmarValor() async {
-    if(streamSubscription != null){
+    /* if(streamSubscription != null){
       DocumentSnapshot snapshot = await UsuarioFirebase.getDadosRequisicao(_idRequisicao);
       dialogValorCorrida(snapshot['valorCorrida']);
       _getLastPosition();
       streamSubscription.cancel();
-    }
+    } */
   }
 
   Future<String> _calcularValorVieagem(double latOrigem,longOrigem,latDestino,longDestino)  async{
 
-    double distanciaEntreOrigemDestino = await Geolocator.distanceBetween(
+    double distanciaEntreOrigemDestino =  Geolocator.distanceBetween(
         latOrigem,
         longOrigem,
         latDestino,
@@ -776,17 +790,15 @@ class ViewPassageiroState extends State<ViewPassageiro> {
      return valorCobrado;
   }
 
-  String formatarValor(double){
+  String formatarValor( double unFormatedValue){
    var valor  = NumberFormat('##,##0.00','pt-BR');
-    String total =  valor.format(double);
+    String total =  valor.format(unFormatedValue);
    return total;
   }
 
   @override
   void dispose() {
-
-
     super.dispose();
-     streamSubscription.cancel();
+   //  streamSubscription.cancel();
   }
 }

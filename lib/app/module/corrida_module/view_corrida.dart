@@ -11,19 +11,19 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
 import 'package:uber/controller/Banco.dart';
-import 'package:uber/model/Marcador.dart';
-import 'package:uber/model/Requisicao.dart';
-import 'package:uber/model/Usuario.dart';
-import 'package:uber/util/Status.dart';
-import 'package:uber/util/UsuarioFirebase.dart';
-import '../Rotas.dart';
+import 'package:uber/app/model/Marcador.dart';
+import 'package:uber/app/model/Requisicao.dart';
+import 'package:uber/app/model/Usuario.dart';
+import 'package:uber/app/util/Status.dart';
+import 'package:uber/app/util/UsuarioFirebase.dart';
+import '../../../Rotas.dart';
 
 
 
 class ViewCorrida extends StatefulWidget{
   late String idRequisicao;
 
-  ViewCorrida(this.idRequisicao);
+  ViewCorrida(this.idRequisicao, {super.key});
 
   @override
   State<StatefulWidget> createState() => ViewCorridaState();
@@ -31,7 +31,7 @@ class ViewCorrida extends StatefulWidget{
 
 class ViewCorridaState extends State<ViewCorrida> {
 
-  Completer<GoogleMapController> _comtroler = Completer();
+  final Completer<GoogleMapController> _comtroler = Completer();
   CameraPosition _cameraPositionViagem =CameraPosition(
       target:LatLng(-13.001478,-38.499390),
   );
@@ -92,7 +92,6 @@ class ViewCorridaState extends State<ViewCorrida> {
               target:LatLng(position.latitude,position.longitude)
               ,zoom:18
           );
-
           localMotorista = position;
            _addMarcador(position, 'motorista', 'Meu local');
           _moverCamera(_cameraPositionViagem);
@@ -228,7 +227,10 @@ class ViewCorridaState extends State<ViewCorrida> {
     double latDestinoFinal  =  snapshot['motorista']['latitude'];
     double longDestinoFinal =  snapshot['motorista']['longitude'];
 
-    Position positioFinal = Position(longitude:longDestinoFinal, latitude: latDestinoFinal,
+    Position positioFinal = Position(
+        longitude:longDestinoFinal, latitude: latDestinoFinal,
+        altitudeAccuracy: 0,
+        headingAccuracy: 0,
         timestamp: DateTime.now(),
         accuracy:  0,
         altitude: 18,
@@ -289,7 +291,7 @@ class ViewCorridaState extends State<ViewCorrida> {
                  padding: EdgeInsets.only(left: 60,right: 60),
                    child: ElevatedButton(
                      style: ElevatedButton.styleFrom(
-                         primary: _corPadrao,
+                         backgroundColor: _corPadrao,
                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                        textStyle: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
                        elevation: 5,
@@ -336,6 +338,8 @@ class ViewCorridaState extends State<ViewCorrida> {
 
    Position localOrigem = Position(longitude:mLong, latitude: mLat,
         timestamp: DateTime.now(),
+        altitudeAccuracy: 0,
+        headingAccuracy: 0,
         accuracy:  0,
         altitude: 18,
         heading: 0,
@@ -343,6 +347,8 @@ class ViewCorridaState extends State<ViewCorrida> {
         speedAccuracy: 0
     ) ;
    Position _localDestino = Position(longitude:destionoLong, latitude: destinoLat,
+     altitudeAccuracy: 0,
+     headingAccuracy: 0,
         timestamp: DateTime.now(),
         accuracy:  0,
         altitude: 18,
@@ -375,7 +381,7 @@ class ViewCorridaState extends State<ViewCorrida> {
 
   gerarMarcador(Position position,BitmapDescriptor icon,String titulo,String id){
     Marker marker = Marker(
-        markerId:   MarkerId("${id}"),
+        markerId:   MarkerId(id),
       position:     LatLng(position.latitude,position.longitude),
       infoWindow:   InfoWindow(title: titulo),
       icon: icon
@@ -388,8 +394,8 @@ class ViewCorridaState extends State<ViewCorrida> {
   _aceitarCorrida() async{
 
      Usuario usuarioMotorista = await UsuarioFirebase.recuperarDadosPassageiro();
-     usuarioMotorista.latitude =localMotorista.latitude;
-     usuarioMotorista.longitude =localMotorista.longitude;
+     usuarioMotorista.copyWith(latitude: localMotorista.latitude);
+     usuarioMotorista.copyWith(longitude: localMotorista.longitude);
 
      Banco.db.collection("requisicao")
          .doc(widget.idRequisicao).update({
