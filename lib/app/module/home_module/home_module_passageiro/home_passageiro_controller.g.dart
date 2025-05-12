@@ -288,6 +288,24 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
     });
   }
 
+  late final _$_paymentsAtom =
+      Atom(name: 'HomePassageiroControllerBase._payments', context: context);
+
+  List<PaymentType> get payments {
+    _$_paymentsAtom.reportRead();
+    return super._payments;
+  }
+
+  @override
+  List<PaymentType> get _payments => payments;
+
+  @override
+  set _payments(List<PaymentType> value) {
+    _$_paymentsAtom.reportWrite(value, super._payments, () {
+      super._payments = value;
+    });
+  }
+
   late final _$_exibirCaixasDeRotasAtom = Atom(
       name: 'HomePassageiroControllerBase._exibirCaixasDeRotas',
       context: context);
@@ -426,9 +444,9 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
       context: context);
 
   @override
-  Future<void> createRequisitionToRide() {
+  Future<void> createRequisitionToRide(int idPaymentType) {
     return _$createRequisitionToRideAsyncAction
-        .run(() => super.createRequisitionToRide());
+        .run(() => super.createRequisitionToRide(idPaymentType));
   }
 
   late final _$cancelarUberAsyncAction = AsyncAction(

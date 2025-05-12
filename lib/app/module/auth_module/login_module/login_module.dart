@@ -19,7 +19,6 @@ class RegisterModule extends FlutterGetItModuleRouter {
         name: "/LoginPage",
         bindings: [
          Bind.lazySingleton((i) =>LoginController(
-            serviceUser: i(), 
             authService: i()
             ))
         ],

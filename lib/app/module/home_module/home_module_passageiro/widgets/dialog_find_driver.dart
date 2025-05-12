@@ -14,9 +14,10 @@ class DialogFindDriver extends StatelessWidget {
     return  Center(
         child: Container(
           padding: const EdgeInsets.all(25),
+          width: MediaQuery.sizeOf(context).width * 0.80,
           height: MediaQuery.of(context).size.height * 0.36,
           decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.white.withAlpha(220),
               borderRadius: BorderRadius.circular(32)),
           child: Column(
             children: [
@@ -26,7 +27,7 @@ class DialogFindDriver extends StatelessWidget {
               SizedBox(
                 height:
                     MediaQuery.of(context).size.height * 0.2,
-                child: lotiie.Lottie.asset(
+                child: lottie.Lottie.asset(
                     UberCloneConstants.LOTTI_ASSET_FIND_DRIVER),
               ),
               ElevatedButton(
@@ -36,7 +37,7 @@ class DialogFindDriver extends StatelessWidget {
                ),
                child:const Text(
                 "Cancelar",
-                style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white),
                ) 
               )
             ],

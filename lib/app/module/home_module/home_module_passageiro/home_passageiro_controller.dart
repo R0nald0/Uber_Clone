@@ -1,7 +1,5 @@
 import 'dart:async';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -23,10 +21,11 @@ abstract class HomePassageiroControllerBase with Store {
   final ITripSerivce _tripService;
   final INotificationService _notificationService;
   final FirebaseNotfication _firebaseNotificationService;
+  final IPaymentService _paymentService;
 
-  late StreamSubscription<String> streamSubscription;
-  late StreamSubscription<UberMessanger> notificatioSubscription;
-  late StreamSubscription<String> tokenSubscription;
+  StreamSubscription<String>? streamSubscription ;
+  StreamSubscription<UberMessanger>? notificatioSubscription;
+
 
   final controller = Completer<GoogleMapController>();
 
@@ -39,6 +38,7 @@ abstract class HomePassageiroControllerBase with Store {
     required ILocationService locattionService,
     required MapsCameraService cameraService,
     required ITripSerivce tripService,
+    required IPaymentService paymentService,
     required FirebaseNotfication firebaseNotificationService,
   })  : _authService = authService,
         _addressService = addressService,
@@ -48,8 +48,8 @@ abstract class HomePassageiroControllerBase with Store {
         _mapsCameraService = cameraService,
         _tripService = tripService,
         _notificationService = notificationService,
-        _firebaseNotificationService =firebaseNotificationService;
-        
+        _firebaseNotificationService = firebaseNotificationService,
+        _paymentService = paymentService;
 
   @readonly
   var _addresList = <Address>[];
@@ -105,6 +105,8 @@ abstract class HomePassageiroControllerBase with Store {
 
   @readonly
   var _polynesRouter = <Polyline>{};
+  @readonly
+  var _payments = <PaymentType>[];
 
   @readonly
   bool? _exibirCaixasDeRotas;
@@ -159,8 +161,8 @@ abstract class HomePassageiroControllerBase with Store {
         logout();
       }
       _usuario = await _userService.getDataUserOn(idCurrentUser!);
+     // await getPermissionLocation();
       await verfyActivatedRequisition();
-      await getPermissionLocation();
     } on UserException catch (e) {
       _errorMensager = e.message;
       logout();
@@ -169,8 +171,6 @@ abstract class HomePassageiroControllerBase with Store {
 
   Future<void> verfyActivatedRequisition() async {
     try {
-      _errorMensager = null;
-      //Todo verificar metodo
       final requisicao = await _requisitionSerivce
           .verfyActivatedRequisition(_usuario!.idRequisicaoAtiva!);
       _requisicao = requisicao;
@@ -178,12 +178,12 @@ abstract class HomePassageiroControllerBase with Store {
       return;
     } on RequestNotFound {
       _requisicao = Requisicao.empty();
+      _showErrorMessage("Escolha seu destino para iniciar a viagem");
     }
   }
 
   Future<void> getActiveTripData(Requisicao requisicao) async {
-    final latitude = requisicao.passageiro.latitude;
-    final longitude = requisicao.passageiro.longitude;
+     final Usuario(:latitude,:longitude) = requisicao.passageiro;
 
     final addressPassanger =
         await _locationService.findDataLocationFromLatLong(latitude, longitude);
@@ -201,11 +201,6 @@ abstract class HomePassageiroControllerBase with Store {
   Future<void> _getUserLocation() async {
     final actualPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-
-    /*  _cameraPosition = CameraPosition(
-        target: LatLng(actualPosition.latitude, actualPosition.longitude),
-        zoom: 16,
-      ); */
 
     final address = await _locationService.findDataLocationFromLatLong(
         actualPosition.latitude, actualPosition.longitude);
@@ -261,7 +256,9 @@ abstract class HomePassageiroControllerBase with Store {
 
     if (_usuario != null) {
       final pathImageIcon = await _locationService.markerPositionIconCostomizer(
-          "${UberCloneConstants.ASSEESTS_IMAGE}/destination1.png", 0.0, const Size(20, 20));
+          "${UberCloneConstants.ASSEESTS_IMAGE}/destination1.png",
+          0.0,
+          const Size(20, 20));
 
       final myMarkerLocal = _locationService.createLocationMarker(
           addres.latitude,
@@ -286,7 +283,9 @@ abstract class HomePassageiroControllerBase with Store {
     );
 
     final pathImageIcon = await _locationService.markerPositionIconCostomizer(
-        "${UberCloneConstants.ASSEESTS_IMAGE}/destination2.png", 0.0, const Size(20, 20));
+        "${UberCloneConstants.ASSEESTS_IMAGE}/destination2.png",
+        0.0,
+        const Size(20, 20));
     final myMarkerLocal = _locationService.createLocationMarker(
         addres.latitude,
         addres.longitude,
@@ -333,53 +332,62 @@ abstract class HomePassageiroControllerBase with Store {
   @action
   Future<void> _traceRouter() async {
     _polynesRouter = <Polyline>{};
-    if (isAddressNotNullOrEmpty) {
+
+  if (isAddressNotNullOrEmpty) {
       final polylinesData = await _tripService.getRoute(
           _myAddres!,
           _myDestination!,
           Colors.black,
           5,
           const String.fromEnvironment('maps_key'));
+
       final linesCordenates = Set<Polyline>.of(polylinesData.router.values);
       _polynesRouter = linesCordenates;
       _configureTripList(polylinesData);
     }
   }
 
-  void _configureTripList(PolylineData data) {
+  void _configureTripList(PolylineData polylineData) async {
     if (_polynesRouter.isNotEmpty) {
-      final trips = _tripService.configureTripList(data);
-      _trips = trips;
+      try {
+        final payments = await _paymentService.getTypesPayment();
+          _payments = payments;
+           final trips = _tripService.configureTripList(polylineData);
+          _trips = trips;
+      } on RepositoryException catch (e) {
+          _showErrorMessage(e.message);
+      }
     }
   }
-
-  @action
-  Future<void> selectedTrip(Trip trip) async {
-    _tripSelected = trip;
+  void _showErrorMessage(String message,{dynamic error,StackTrace? stackTrace}) {
+     _errorMensager = null;
+     _errorMensager = message;
+     log(error,stackTrace: stackTrace);
   }
 
   @action
-  Future<void> createRequisitionToRide() async {
-    _errorMensager = null;
+  Future<void> selectedTrip(Trip trip) async => _tripSelected = trip;
+  
+  
+  @action
+  Future<void> createRequisitionToRide(int idPaymentType) async {
     if (_tripSelected == null ||
         _myAddres == null ||
         _myDestination == null ||
         _usuario == null) {
-      _errorMensager = "escolha os dados para sua viagem";
+       _showErrorMessage("escolha os dados para sua viagem",);
       return;
     }
 
-    final myLat = _myAddres!.latitude;
-    final myLong = _myAddres!.longitude;
-
-    final lat = _myDestination!.latitude;
-    final long = _myDestination!.longitude;
-
+    final Address(latitude:myLatitude,longitude: myLongitude) = _myAddres!;
+    final Address(latitude:destinationLatitude,longitude:destinationLongitude) = _myDestination!; 
+  
     try {
       final destinationAddress =
-          await _locationService.findDataLocationFromLatLong(lat, long);
+          await _locationService.findDataLocationFromLatLong(destinationLatitude, destinationLongitude);
 
       final requisicao = Requisicao(
+        paymentType: _payments.firstWhere((p) => p.id == idPaymentType),
         id: null,
         destino: destinationAddress,
         motorista: null,
@@ -387,35 +395,34 @@ abstract class HomePassageiroControllerBase with Store {
         status: Status.AGUARDANDO,
         valorCorrida: _tripSelected!.price,
       );
-
+       requisicao;  
       final requestId = await _requisitionSerivce.createRequisition(requisicao);
-
+      
       final userUpadated = _usuario!.copyWith(
         idRequisicaoAtiva: requestId,
-        latitude: myLat,
-        longitude: myLong,
+        latitude: myLatitude,
+        longitude: myLongitude,
       );
 
-      await _userService.updateUser(userUpadated);
-      //TODO QUANDO CANCELAR VIAGEM EXLUIIR ID DA REQUISIÇÂO NO PASSAGEIRO
-      final requestUpdated = await _requisitionSerivce.updataDataRequisition(
-          //TODO ERRO AO ATUALIZAR REQUISIÇÂO
-          requisicao,
-          {"idRequisicao": requestId, "passageiro": userUpadated.toMap()});
+        final completedUpdate = requisicao.copyWith(
+        id: ()=> requestId,
+        passageiro: userUpadated
+       );
+
+         await _userService.updateUser(userUpadated);
+      //TODO QUANDO CANCELAR VIAGEM EXcLUIIR ID DA REQUISIÇÂO NO PASSAGEIRO
+
+     
+      final requestUpdated = await _requisitionSerivce.updataDataRequisition(completedUpdate);
       _requisicao = requestUpdated;
       _usuario = userUpadated;
+
     } on RequestException catch (e, s) {
-      _errorMensager = e.message;
-      if (kDebugMode) {
-        print(s);
-        print(e);
-      }
+       _showErrorMessage(e.message,error: e ,stackTrace: s);
+   
     } on AddresException catch (e, s) {
-      _errorMensager = e.message;
-      if (kDebugMode) {
-        print(s);
-        print(e);
-      }
+       _showErrorMessage(e.message,error: e,stackTrace: s);
+       
     }
   }
 
@@ -427,8 +434,13 @@ abstract class HomePassageiroControllerBase with Store {
 
     final isCancel = await _requisitionSerivce.cancelRequisition(_requisicao!);
     if (isCancel) {
+      _addresList= List.empty();
+      _markers = {};
+      _tripSelected = null;
+      _myDestination = null;
+      _polynesRouter = {};
+      streamSubscription?.cancel();
       _requisicao = null;
-      streamSubscription.cancel();
     }
   }
 
@@ -463,8 +475,13 @@ abstract class HomePassageiroControllerBase with Store {
       if (_requisicao != null) {
         final userUpdated = _usuario!.copyWith(
             latitude: position.latitude, longitude: position.longitude);
+
+            _requisicao = _requisicao!.copyWith(
+              passageiro: userUpdated
+            );
+
         _requisitionSerivce.updataDataRequisition(
-            _requisicao!, userUpdated.toMap());
+            _requisicao!,);
 
         final myMarkerLocal = _locationService.createLocationMarker(
             position.latitude,
@@ -473,6 +490,7 @@ abstract class HomePassageiroControllerBase with Store {
             "my_local",
             'meu local',
             10);
+
         _markers.add(myMarkerLocal);
       }
     });
@@ -482,26 +500,27 @@ abstract class HomePassageiroControllerBase with Store {
     switch (request.status) {
       case Status.AGUARDANDO:
         statusUberAguardando(request);
-      case Status.A_CAMINHO:
-        ;
+        break;
+      case Status.A_CAMINHO: 
+       break;
       case Status.EM_VIAGEM:
-        ;
+         break;
       case Status.CONFIRMADA:
-        ;
+         break ;
       case Status.FINALIZADO:
-        ;
+          break;
       case Status.CANCELADA:
         statusUberNaoChamdo();
+
     }
   }
-
+ 
   Future<void> statusUberNaoChamdo() async {
+  
     _textoBotaoPadrao = "Procurar Motorista";
     _statusRequisicao = Status.NAO_CHAMADO;
     _exibirCaixasDeRotas = true;
-    _functionPadrao = () {};
-    // await _getUserLocation();
-    // await _getUserAddress();
+      await _getUserLocation();
   }
 
   Future<void> statusUberAguardando(Requisicao request) async {
@@ -509,9 +528,6 @@ abstract class HomePassageiroControllerBase with Store {
     _statusRequisicao = Status.AGUARDANDO;
     _exibirCaixasDeRotas = false;
     getActiveTripData(request);
-    _functionPadrao = cancelarUber;
-
-    _showAllPositionsAndTraceRouter();
   }
 
   Future<void> deslogar() async {
@@ -521,8 +537,7 @@ abstract class HomePassageiroControllerBase with Store {
         _usuario = null;
       }
     } on UserException catch (e) {
-      _errorMensager = null;
-      _errorMensager = e.message;
+      _showErrorMessage(e.message ?? 'Usuário não deslogado,tente novamente!!');
     }
   }
 
@@ -547,34 +562,13 @@ abstract class HomePassageiroControllerBase with Store {
       }
     });
   }
-  
-    Future<void> getMessgeBAckGround() async {
-      _firebaseNotificationService.getNotificationFinishedApp();
-    }
 
-  Future<void> getTokenDevice() async {
-    final token = await _firebaseNotificationService.getTokenDevice();
-    _firebaseNotificationService.requestPermission();
-    if (token == null) return debugPrint("TOKEN FIREBASE: TOKEN nulo ");
-    debugPrint("TOKEN FIREBASE: $token");
-  }
-
-  Future<void> listenToken() async {
-    tokenSubscription = _firebaseNotificationService.onTokenRefresh().listen(
-      (data) {
-        debugPrint("TOKEN LISTEm FIREBASE: $data ");
-      },
-    );
-  }
-
-  Future<void> showNotification() async {
-    _notificationService.showNotification(
-        title: "Teste Notification", body: "Enviando notificação de teste");
+  Future<void> getMessgeBackGround() async {
+    _firebaseNotificationService.getNotificationFinishedApp();
   }
 
   void dispose() {
-    tokenSubscription.cancel();
-    notificatioSubscription.cancel();
-    streamSubscription.cancel();
+    notificatioSubscription?.cancel();
+    streamSubscription?.cancel();
   }
 }

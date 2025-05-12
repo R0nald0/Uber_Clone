@@ -7,11 +7,10 @@ part 'login_controller.g.dart';
 class LoginController = LoginControllerBase with _$LoginController;
 
 abstract class LoginControllerBase with Store {
-  final IUserService _userService;
+ 
   final IAuthService _authService;
   
-  LoginControllerBase({required IUserService serviceUser,required IAuthService authService}):
-        _userService = serviceUser,
+  LoginControllerBase({required IAuthService authService}):
         _authService = authService,
         super();
 
@@ -19,21 +18,26 @@ abstract class LoginControllerBase with Store {
   String? _errorMensage;
 
   @readonly
-  bool? _hasSuccessLogin;
+  bool? _hasSuccessLogin ;
   
 
   @action
   Future<void> login(String email, String password) async {
-    try {
       _errorMensage = null;
+      _hasSuccessLogin = null;
+    try {    
+
       final isSuccess = await _authService.login(email, password);
       if (isSuccess) {
-        _hasSuccessLogin  = isSuccess;
+        _hasSuccessLogin  = true;
         return;
       }
      _hasSuccessLogin =false;
+     
     } on UserException catch (e) {
-      _errorMensage = e.message;
+       
+      _hasSuccessLogin = false;
+     _errorMensage = 'Email ou senha incorreta,por favor tente novamente';
     }
   }
 }

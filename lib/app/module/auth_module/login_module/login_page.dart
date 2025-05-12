@@ -17,22 +17,24 @@ class LoginPageState extends State<LoginPage>  with DialogLoader {
   final _controllerEmail = TextEditingController();
   final _controllerSenha = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final reactions = <ReactionDisposer>[];
+  
 
-   final reactions = <ReactionDisposer>[];
-    String erroMensagem = "";
 
   initReaction() {
+    
    final errorReactionDispose =reaction<String?>((_) => widget.loginController.errorMensage, (erro) {
+           
       if (erro != null && erro.isNotEmpty) {
-       callSnackBar(erro);
+        callSnackBar(erro);
       }
     });
 
-    final reactionSuccesLogin = reaction<bool?>((_)=>widget.loginController.hasSuccessLogin, (success){
+    final reactionSuccesLogin = reaction<bool?>((_)=>widget.loginController.hasSuccessLogin, (success) async{
+         hideLoader();  
          if (success == true) {
-          hideLoader();
            Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_VIEWPASSAGEIRO,(_)=> false);
-         } 
+         }
     });
 
     reactions.addAll([reactionSuccesLogin,errorReactionDispose]);
@@ -61,8 +63,6 @@ class LoginPageState extends State<LoginPage>  with DialogLoader {
 
   @override
   Widget build(BuildContext context) {
-
-    initReaction();
     return Scaffold(
       body: Container(
           padding: const EdgeInsets.all(16),
@@ -99,8 +99,7 @@ class LoginPageState extends State<LoginPage>  with DialogLoader {
               hintText: 'Email...',
               validator: Validatorless.multiple([
                 Validatorless.required("Campo requerido"),
-                Validatorless.email('E-mail inválido')
-                ,
+                Validatorless.email('E-mail inválido'),
               ]),
             ),
           ),
@@ -139,18 +138,17 @@ class LoginPageState extends State<LoginPage>  with DialogLoader {
               final isValid = formState.currentState?.validate() ?? false;
               if (isValid) {
                  final email = _controllerEmail.text;
-                 final ssenha = _controllerSenha.text;
+                 final senha = _controllerSenha.text;
                  showLoaderDialog();
-                 await loginController.login(email,ssenha );
+                 await loginController.login(email,senha );
               }
-             
             },
             child: const Text("Login"),
           ),
         ),
         TextButton(
             onPressed: () {
-              Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_VIEWPASSAGEIRO,(_)=>false);
+              Navigator.of(context).pushNamed(Rotas.ROUTE_REGISTER);
             },
             child: const Text(
               "Nao tem conta, Cadastre-se!! ",
