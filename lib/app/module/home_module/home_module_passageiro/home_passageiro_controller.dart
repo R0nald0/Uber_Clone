@@ -161,18 +161,26 @@ abstract class HomePassageiroControllerBase with Store {
         logout();
       }
       _usuario = await _userService.getDataUserOn(idCurrentUser!);
-     // await getPermissionLocation();
-      await verfyActivatedRequisition();
+    
+       // await getPermissionLocation();
+      if(_usuario!.idRequisicaoAtiva == null || _usuario!.idRequisicaoAtiva!.isEmpty) {
+        _errorMensager = "Escolha um destino para iniciar uma corrida";
+        _requisicao = Requisicao.empty();
+        return;
+      }
+
+      await verfyActivatedRequisition(_usuario!.idRequisicaoAtiva!);
+
     } on UserException catch (e) {
       _errorMensager = e.message;
       logout();
     }
   }
 
-  Future<void> verfyActivatedRequisition() async {
+  Future<void> verfyActivatedRequisition(String  idRequisicao) async {
     try {
       final requisicao = await _requisitionSerivce
-          .verfyActivatedRequisition(_usuario!.idRequisicaoAtiva!);
+          .verfyActivatedRequisition(idRequisicao);
       _requisicao = requisicao;
       // initListener();
       return;

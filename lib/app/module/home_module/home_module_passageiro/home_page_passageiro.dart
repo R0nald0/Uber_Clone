@@ -53,7 +53,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
 
     final requicaoReaction = reaction<Requisicao?>(
         (_) => widget.homePassageiroController.requisicao, (requisicao) async {
-      hideLoader();
+      
       if (requisicao == null || requisicao.id == null) {
         widget.homePassageiroController.statusUberNaoChamdo();
       } else {
@@ -74,19 +74,22 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
         (permission) {
 
       if (permission == LocationPermission.denied) {
+         showLoaderDialog();
          dialogLocationPermissionDenied(() {
           widget.homePassageiroController.getPermissionLocation();
         });
+        hideLoader();   
       } else if (permission == LocationPermission.deniedForever) {
         dialogLocationPermissionDeniedForeve(() {
           Geolocator.openAppSettings();
         });
       }
     });
-    widget.homePassageiroController.getPermissionLocation();
+      widget.homePassageiroController.getPermissionLocation(); 
     showLoaderDialog();
-    await widget.homePassageiroController.getDataUSerOn();
-
+     await widget.homePassageiroController.getDataUSerOn();
+    hideLoader();   
+   
 
     disposerReactions.addAll([
       erroReaction,

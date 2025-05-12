@@ -24,15 +24,17 @@ abstract class RegisterControllerBase with Store {
   Future<void> register(String name,String email,String password) async{
      try {
         _errorMessange =null;
+        _hasSuccesRegister = null;
        final isSuccess  = await _authService.register(name, email, password,UberCloneConstants.TIPO_USUARIO_PASSAGEIRO);
        if (isSuccess) {
         _hasSuccesRegister = isSuccess;
+        _authService.logout();
          return;
        }
-       throw UserException(message: "Erro ao criar usuario");
-
+      _hasSuccesRegister = false;
      } on UserException catch (e) {
        _errorMessange = e.message;
+       _hasSuccesRegister = false;
      }
   }
   

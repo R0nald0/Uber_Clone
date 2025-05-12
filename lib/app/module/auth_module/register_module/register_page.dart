@@ -38,9 +38,11 @@ final reactions = <ReactionDisposer>[];
     });
 
     final reactionSuccesRegister = reaction((_)=>widget.registerController.hasSuccesRegister, (success){
-         if (success! && success) {
-           Navigator.of(context).pushNamedAndRemoveUntil(Rotas.ROUTE_VIEWPASSAGEIRO,(_) =>false);
-         } 
+         hideLoader();
+         if (success == true) {
+           callInfoSnackBar("Cadastrado com Sucesso");
+           Navigator.of(context).pop(Rotas.ROUTE_LOGIN);
+           } 
     });
 
     reactions.addAll([reactionSuccesRegister,errorReactionDispose]);
@@ -91,9 +93,9 @@ final reactions = <ReactionDisposer>[];
                              final email = _controllerEmail.text;
                              final password = _controllerSenha.text;  
                              await  widget.registerController.register(name, email, password);
-                             //_validarCampos();
+                            
                          }
-                         hideLoader(); 
+                  
                      },
                      child: const Text("Cadastrar")
                  )
@@ -117,7 +119,7 @@ final reactions = <ReactionDisposer>[];
             prefixIcon: const Icon(Icons.person),
             validator: Validatorless.multiple([
               Validatorless.required('Nome requerido'),
-              Validatorless.min(6, "seu nome precisar ter pelo menos 6 letras")
+              Validatorless.min(6, "seu nome precisa ter pelo menos 6 letras")
             ]),
             ),
        
@@ -130,11 +132,10 @@ final reactions = <ReactionDisposer>[];
             hintText: "SeuEmail@.com......",
             prefixIcon: const Icon(Icons.email),
             validator: Validatorless.multiple([
-              Validatorless.required("Email requerido"),
-              Validatorless.email("Defina um Email válido")
+              Validatorless.required("E-mail requerido"),
+              Validatorless.email("Defina um E-mail válido")
             ]),
             ),
-       
            ),
        
             UberTextFieldWidget(
@@ -148,26 +149,6 @@ final reactions = <ReactionDisposer>[];
               Validatorless.min(5, "Defina uma senha com mais que 5 caracteres")
             ]),
             ),
-           
-          //  Padding(
-          //      padding:const EdgeInsets.only(top: 10,bottom: 20),
-          //      child: Row(
-          //        children: <Widget>[
-          //          const Text("Passageiro"),
-          //          Switch(
-          //              value: _tipoUsuario,
-          //              onChanged: (bool valor){
-          //                setState(() {
-          //                  _tipoUsuario = valor;
-          //                });
-          //              }
-          //          ),
-          //          const Text("Motorista")
-          //        ],
-          //      )
-          //  ),
-       
-         
          ],
        ),
      );
