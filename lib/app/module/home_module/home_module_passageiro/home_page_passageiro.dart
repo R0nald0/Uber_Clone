@@ -57,7 +57,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
       if (requisicao == null || requisicao.id == null) {
         widget.homePassageiroController.statusUberNaoChamdo();
       } else {
-        widget.homePassageiroController.statusVeifyRequest(requisicao);
+        widget.homePassageiroController.observerRequestState(requisicao);
       }
     });
 
@@ -192,8 +192,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                     onCameraMove: (position) {
                       // posicao da camera em movimento
                     },
-                    initialCameraPosition:
-                        controller.cameraPosition ?? positionCan,
+                    initialCameraPosition: controller.cameraPosition ??
+                         positionCan,
                     onMapCreated: (GoogleMapController mapController) {
                       controller.controller.complete(mapController);
                     },
@@ -202,7 +202,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                 Observer(builder: (context) {
                   return Visibility(
                     replacement: const SizedBox.shrink(),
-                    visible: controller.exibirCaixasDeRotas ?? true,
+                    visible:controller.exibirCaixasDeRotas == true,
                     child: Form(
                       key: formKey,
                       child: Stack(
@@ -295,7 +295,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                 Observer(builder: (context) {
                   return Visibility(
                     replacement: const SizedBox.shrink(),
-                    visible: controller.exibirCaixasDeRotas ?? true,
+                    visible: controller.exibirCaixasDeRotas == true,
                     child: UberButtonElevated(
                         functionPadrao: () {
                           switch (formKey.currentState?.validate()) {

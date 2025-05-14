@@ -406,9 +406,10 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
       context: context);
 
   @override
-  Future<void> _showAllPositionsAndTraceRouter() {
+  Future<void> _showAllPositionsAndTraceRouter(
+      ({double latitude, double longitude}) position) {
     return _$_showAllPositionsAndTraceRouterAsyncAction
-        .run(() => super._showAllPositionsAndTraceRouter());
+        .run(() => super._showAllPositionsAndTraceRouter(position));
   }
 
   late final _$findAddresByNameAsyncAction = AsyncAction(

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -23,7 +24,7 @@ abstract class HomePassageiroControllerBase with Store {
   final FirebaseNotfication _firebaseNotificationService;
   final IPaymentService _paymentService;
 
-  StreamSubscription<String>? streamSubscription ;
+  StreamSubscription<Requisicao>? requestSubscription ;
   StreamSubscription<UberMessanger>? notificatioSubscription;
 
 
@@ -276,7 +277,8 @@ abstract class HomePassageiroControllerBase with Store {
           'meu local',
           10);
       _markers.add(myMarkerLocal);
-      _showAllPositionsAndTraceRouter();
+       final position = (latitude: addres.latitude,longitude: addres.longitude);
+     await _showAllPositionsAndTraceRouter(position);
     }
   }
 
@@ -285,10 +287,7 @@ abstract class HomePassageiroControllerBase with Store {
     _myDestination = null;
     _myDestination = addres;
 
-    _cameraPosition = CameraPosition(
-      target: LatLng(addres.latitude, addres.longitude),
-      zoom: 16,
-    );
+   
 
     final pathImageIcon = await _locationService.markerPositionIconCostomizer(
         "${UberCloneConstants.ASSEESTS_IMAGE}/destination2.png",
@@ -302,14 +301,20 @@ abstract class HomePassageiroControllerBase with Store {
         'Meu destino',
         90);
     _markers.add(myMarkerLocal);
-    _showAllPositionsAndTraceRouter();
+    final position = (latitude: addres.latitude,longitude: addres.longitude);
+    await _showAllPositionsAndTraceRouter(position);
   }
 
   @action
-  Future<void> _showAllPositionsAndTraceRouter() async {
+  Future<void> _showAllPositionsAndTraceRouter(({double latitude,double longitude}) position) async {
     if (!isAddressNotNullOrEmpty) {
+        _cameraPosition = CameraPosition(
+        target: LatLng(position.latitude, position.longitude),
+        zoom: 16,
+      );
+
       if (_cameraPosition != null) {
-        _mapsCameraService.moveCamera(_cameraPosition!, controller);
+        await _mapsCameraService.moveCamera(_cameraPosition!, controller);
       }
       return;
     }
@@ -351,7 +356,10 @@ abstract class HomePassageiroControllerBase with Store {
 
       final linesCordenates = Set<Polyline>.of(polylinesData.router.values);
       _polynesRouter = linesCordenates;
-      _configureTripList(polylinesData);
+      
+       if (_requisicao?.status == Status.NAO_CHAMADO) {
+         _configureTripList(polylinesData);
+       }
     }
   }
 
@@ -416,10 +424,8 @@ abstract class HomePassageiroControllerBase with Store {
         id: ()=> requestId,
         passageiro: userUpadated
        );
-
-         await _userService.updateUser(userUpadated);
-      //TODO QUANDO CANCELAR VIAGEM EXcLUIIR ID DA REQUISIÇÂO NO PASSAGEIRO
-
+        
+        await _userService.updateUser(userUpadated);
      
       final requestUpdated = await _requisitionSerivce.updataDataRequisition(completedUpdate);
       _requisicao = requestUpdated;
@@ -447,7 +453,7 @@ abstract class HomePassageiroControllerBase with Store {
       _tripSelected = null;
       _myDestination = null;
       _polynesRouter = {};
-      streamSubscription?.cancel();
+      requestSubscription?.cancel();
       _requisicao = null;
     }
   }
@@ -510,6 +516,7 @@ abstract class HomePassageiroControllerBase with Store {
         statusUberAguardando(request);
         break;
       case Status.A_CAMINHO: 
+         _stateUberOnWay(request);
        break;
       case Status.EM_VIAGEM:
          break;
@@ -575,8 +582,33 @@ abstract class HomePassageiroControllerBase with Store {
     _firebaseNotificationService.getNotificationFinishedApp();
   }
 
+  Future<void> observerRequestState(Requisicao request) async{
+    requestSubscription = _requisitionSerivce.findAndObserverById(request).listen((dataActualRequest) async{
+       
+        await  statusVeifyRequest(dataActualRequest);
+        if (dataActualRequest.status != _requisicao?.status) {
+          _requisitionSerivce.updataDataRequisition(dataActualRequest);
+        }
+        
+     }); 
+  }
+
   void dispose() {
     notificatioSubscription?.cancel();
-    streamSubscription?.cancel();
+    requestSubscription?.cancel();
+  }
+  
+  Future<void> _stateUberOnWay(Requisicao request)async {
+       
+        final  Usuario(:latitude,:longitude,:nome) = request.motorista!; 
+        final  Usuario(latitude: passageiroLatitude,longitude :passageirolongitude) = request.passageiro; 
+        
+
+       final otherLocation = Address.emptyAddres()
+                  .copyWith(latitude: latitude,longitude: longitude,nomeDestino: nome);
+       final passageiroLocation = _myAddres?.copyWith(latitude: passageiroLatitude,longitude: passageirolongitude);
+        
+       await setDestinationLocal(otherLocation);
+       await setNameMyLocal(passageiroLocation!);
   }
 }
