@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:lottie/lottie.dart' as lottie;
 import 'package:mobx/mobx.dart';
 import 'package:uber/Rotas.dart';
@@ -24,6 +25,7 @@ class HomePassageiroPage extends StatefulWidget {
 class HomePassageiroPageState extends State<HomePassageiroPage>
     with DialogLoader {
   final disposerReactions = <ReactionDisposer>[];
+  final placeEC =TextEditingController();
   var address = <Address>[];
   int? _idPaymentType;
 
@@ -37,6 +39,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
      
     final userReaction = reaction<Usuario?>(
         (_) => widget.homePassageiroController.usuario, (usuario) async {
+      
       if (usuario == null) {
         Navigator.of(context)
             .pushNamedAndRemoveUntil(Rotas.ROUTE_LOGIN, (_) => false);
@@ -51,15 +54,23 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
       }
     });
 
-    final requicaoReaction = reaction<Requisicao?>(
+     final requicaoReaction = reaction<Requisicao?>(
+       
         (_) => widget.homePassageiroController.requisicao, (requisicao) async {
-      
-      if (requisicao == null || requisicao.id == null) {
+          hideLoader();
+       if (requisicao == null || requisicao.id == null) {
         widget.homePassageiroController.statusUberNaoChamdo();
       } else {
-        widget.homePassageiroController.observerRequestState(requisicao);
+         if (requisicao.status == RequestState.finalizado) {
+           showTripDialogPassagerValues(
+            requisicao.valorCorrida,
+            requisicao.paymentType.type
+            );
+           return;
+         }
+         await widget.homePassageiroController.observerRequestState();
       }
-    });
+    }); 
 
     final serviceEnableReaction =
         reaction<bool>((_) => widget.homePassageiroController.isServiceEnable,
@@ -89,7 +100,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     showLoaderDialog();
      await widget.homePassageiroController.getDataUSerOn();
     hideLoader();   
-   
+  
 
     disposerReactions.addAll([
       erroReaction,
@@ -142,7 +153,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
 
   @override
   Widget build(BuildContext context) {
-    
+   
     var controller = widget.homePassageiroController;
     return Scaffold(
         appBar: PreferredSize(
@@ -185,6 +196,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
             padding: const EdgeInsets.all(1),
             child: Stack(
               children: <Widget>[
+                
                 Observer(builder: (_) {
                   return GoogleMap(
                     polylines: controller.polynesRouter,
@@ -237,7 +249,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                                             'Campo Requerido'),
                                         onSelcetedAddes: (myActualAddrees) {
                                           controller
-                                              .setNameMyLocal(myActualAddrees);
+                                              .setNameMyLocal(myActualAddrees,'destination1.png');
                                         },
                                         lastAddress: widget
                                             .homePassageiroController
@@ -268,14 +280,14 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                                           },
                                           onSelcetedAddes: (destinationAddres) {
                                             controller.setDestinationLocal(
-                                                destinationAddres);
+                                                destinationAddres,'destination2.png');
                                           },
                                           lastAddress: widget
                                               .homePassageiroController
                                               .addresList,
                                         );
                                       }),
-                                    )
+                                    ),
                                   ],
                                 ),
                               )),
@@ -284,10 +296,11 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                     ),
                   );
                 }),
+               
                 Observer(builder: (context) {
                   return Offstage(
                       offstage:
-                          controller.statusRequisicao != Status.AGUARDANDO,
+                          controller.statusRequisicao != RequestState.aguardando,
                       child: DialogFindDriver(onPressed: () {
                         controller.cancelarUber();
                       }));
@@ -311,6 +324,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                         statusRequisicao: controller.statusRequisicao),
                   );
                 }),
+                
               ],
             ),
           ),

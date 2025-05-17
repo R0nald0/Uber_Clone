@@ -59,6 +59,7 @@ dependencies:
   animated_text_kit: ^4.2.3
   flutter_local_notifications: ^19.1.0
   flutter_launcher_icons: ^0.14.3
+  google_places_flutter: ^2.1.0
   
    
 dev_dependencies:
@@ -94,6 +95,7 @@ flutter:
   assets:
     - assets/images/animations/find_driver.json
     - assets/images/fundo.png
+    - assets/images/map_car.png
     - assets/images/logo.png
     - assets/images/passageiro.png
     - assets/images/motorista.png

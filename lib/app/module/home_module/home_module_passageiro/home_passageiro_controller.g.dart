@@ -329,16 +329,16 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
   late final _$_statusRequisicaoAtom = Atom(
       name: 'HomePassageiroControllerBase._statusRequisicao', context: context);
 
-  String get statusRequisicao {
+  RequestState get statusRequisicao {
     _$_statusRequisicaoAtom.reportRead();
     return super._statusRequisicao;
   }
 
   @override
-  String get _statusRequisicao => statusRequisicao;
+  RequestState get _statusRequisicao => statusRequisicao;
 
   @override
-  set _statusRequisicao(String value) {
+  set _statusRequisicao(RequestState value) {
     _$_statusRequisicaoAtom.reportWrite(value, super._statusRequisicao, () {
       super._statusRequisicao = value;
     });
@@ -387,8 +387,9 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
       context: context);
 
   @override
-  Future<void> setNameMyLocal(Address addres) {
-    return _$setNameMyLocalAsyncAction.run(() => super.setNameMyLocal(addres));
+  Future<void> setNameMyLocal(Address addres, String imagePath) {
+    return _$setNameMyLocalAsyncAction
+        .run(() => super.setNameMyLocal(addres, imagePath));
   }
 
   late final _$setDestinationLocalAsyncAction = AsyncAction(
@@ -396,9 +397,9 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
       context: context);
 
   @override
-  Future<void> setDestinationLocal(Address addres) {
+  Future<void> setDestinationLocal(Address addres, String imagePath) {
     return _$setDestinationLocalAsyncAction
-        .run(() => super.setDestinationLocal(addres));
+        .run(() => super.setDestinationLocal(addres, imagePath));
   }
 
   late final _$_showAllPositionsAndTraceRouterAsyncAction = AsyncAction(

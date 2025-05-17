@@ -4,14 +4,14 @@ class UberButtonElevated extends StatelessWidget {
 
   final VoidCallback functionPadrao;
   final String textoPadrao;
-  final String statusRequisicao;
+  final RequestState statusRequisicao;
 
   const UberButtonElevated(
       {super.key,
       
       required this.functionPadrao,
       required this.textoPadrao,
-      this.statusRequisicao =Status.NAO_CHAMADO
+      this.statusRequisicao =RequestState.nao_chamado
       });
 
   @override
@@ -26,7 +26,7 @@ class UberButtonElevated extends StatelessWidget {
         padding: const EdgeInsets.only(left: 60, right: 60),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-              backgroundColor: statusRequisicao !=  Status.AGUARDANDO ? Colors.black : Colors.red,
+              backgroundColor: statusRequisicao !=  RequestState.aguardando ? Colors.black : Colors.red,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
