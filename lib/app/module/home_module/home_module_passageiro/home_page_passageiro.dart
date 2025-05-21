@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:lottie/lottie.dart' as lottie;
 import 'package:mobx/mobx.dart';
 import 'package:uber/Rotas.dart';
@@ -13,6 +12,7 @@ import 'package:validatorless/validatorless.dart';
 
 part 'widgets/uber_button_elevated.dart';
 part 'widgets/dialog_find_driver.dart';
+part 'widgets/dialog_values_info_trip.dart';
 
 class HomePassageiroPage extends StatefulWidget {
   final HomePassageiroController homePassageiroController;
@@ -25,7 +25,7 @@ class HomePassageiroPage extends StatefulWidget {
 class HomePassageiroPageState extends State<HomePassageiroPage>
     with DialogLoader {
   final disposerReactions = <ReactionDisposer>[];
-  final placeEC =TextEditingController();
+  final placeEC = TextEditingController();
   var address = <Address>[];
   int? _idPaymentType;
 
@@ -36,10 +36,10 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
   List<String> listMenu = ["Pefil", "Deslogar"];
 
   void initReaction() async {
-     
+    final HomePassageiroPage(:homePassageiroController) = widget;
+
     final userReaction = reaction<Usuario?>(
-        (_) => widget.homePassageiroController.usuario, (usuario) async {
-      
+        (_) => homePassageiroController.usuario, (usuario) async {
       if (usuario == null) {
         Navigator.of(context)
             .pushNamedAndRemoveUntil(Rotas.ROUTE_LOGIN, (_) => false);
@@ -48,59 +48,50 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     });
 
     final erroReaction = reaction<String?>(
-        (_) => widget.homePassageiroController.errorMensager, (error) {
+        (_) => homePassageiroController.errorMensager, (error) {
       if (error != null) {
-         callSnackBar(error);
+        callSnackBar(error);
       }
     });
 
-     final requicaoReaction = reaction<Requisicao?>(
-       
-        (_) => widget.homePassageiroController.requisicao, (requisicao) async {
-          hideLoader();
-       if (requisicao == null || requisicao.id == null) {
-        widget.homePassageiroController.statusUberNaoChamdo();
+    final requicaoReaction = reaction<Requisicao?>(
+        (_) => homePassageiroController.requisicao, (requisicao) async {
+      hideLoader();
+      if (requisicao == null ||
+          requisicao.id == null ||
+          requisicao.status == RequestState.pagamento_confirmado) {
+        homePassageiroController.statusUberNaoChamdo();
       } else {
-         if (requisicao.status == RequestState.finalizado) {
-           showTripDialogPassagerValues(
-            requisicao.valorCorrida,
-            requisicao.paymentType.type
-            );
-           return;
-         }
-         await widget.homePassageiroController.observerRequestState();
+        await widget.homePassageiroController.observerRequestState();
       }
-    }); 
+    });
 
-    final serviceEnableReaction =
-        reaction<bool>((_) => widget.homePassageiroController.isServiceEnable,
-            (isServiceEnable) {
+    final serviceEnableReaction = reaction<bool>(
+        (_) => homePassageiroController.isServiceEnable, (isServiceEnable) {
       if (!isServiceEnable) {
         callSnackBar("Ativse sua localização");
       }
     });
 
     final locationPermissionReaction = reaction<LocationPermission?>(
-        (_) => widget.homePassageiroController.locationPermission,
-        (permission) {
-
+        (_) => homePassageiroController.locationPermission, (permission) {
       if (permission == LocationPermission.denied) {
-         showLoaderDialog();
-         dialogLocationPermissionDenied(() {
-          widget.homePassageiroController.getPermissionLocation();
+        showLoaderDialog();
+        dialogLocationPermissionDenied(() {
+          homePassageiroController.getPermissionLocation();
         });
-        hideLoader();   
+        hideLoader();
       } else if (permission == LocationPermission.deniedForever) {
         dialogLocationPermissionDeniedForeve(() {
           Geolocator.openAppSettings();
         });
       }
     });
-      widget.homePassageiroController.getPermissionLocation(); 
+    homePassageiroController.getPermissionLocation();
+
     showLoaderDialog();
-     await widget.homePassageiroController.getDataUSerOn();
-    hideLoader();   
-  
+    await homePassageiroController.getDataUSerOn();
+    hideLoader();
 
     disposerReactions.addAll([
       erroReaction,
@@ -146,14 +137,12 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       initReaction();
-      widget.homePassageiroController.listenMessage();
-      widget.homePassageiroController.getMessgeBackGround();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-   
+    final theme = Theme.of(context);
     var controller = widget.homePassageiroController;
     return Scaffold(
         appBar: PreferredSize(
@@ -196,7 +185,6 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
             padding: const EdgeInsets.all(1),
             child: Stack(
               children: <Widget>[
-                
                 Observer(builder: (_) {
                   return GoogleMap(
                     polylines: controller.polynesRouter,
@@ -204,8 +192,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                     onCameraMove: (position) {
                       // posicao da camera em movimento
                     },
-                    initialCameraPosition: controller.cameraPosition ??
-                         positionCan,
+                    initialCameraPosition:
+                        controller.cameraPosition ?? positionCan,
                     onMapCreated: (GoogleMapController mapController) {
                       controller.controller.complete(mapController);
                     },
@@ -214,7 +202,7 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                 Observer(builder: (context) {
                   return Visibility(
                     replacement: const SizedBox.shrink(),
-                    visible:controller.exibirCaixasDeRotas == true,
+                    visible: controller.exibirCaixasDeRotas == true,
                     child: Form(
                       key: formKey,
                       child: Stack(
@@ -248,8 +236,9 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                                         validator: Validatorless.required(
                                             'Campo Requerido'),
                                         onSelcetedAddes: (myActualAddrees) {
-                                          controller
-                                              .setNameMyLocal(myActualAddrees,'destination1.png');
+                                          controller.setNameMyLocal(
+                                              myActualAddrees,
+                                              'destination1.png');
                                         },
                                         lastAddress: widget
                                             .homePassageiroController
@@ -280,7 +269,8 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                                           },
                                           onSelcetedAddes: (destinationAddres) {
                                             controller.setDestinationLocal(
-                                                destinationAddres,'destination2.png');
+                                                destinationAddres,
+                                                'destination2.png');
                                           },
                                           lastAddress: widget
                                               .homePassageiroController
@@ -296,11 +286,53 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                     ),
                   );
                 }),
-               
                 Observer(builder: (context) {
                   return Offstage(
-                      offstage:
-                          controller.statusRequisicao != RequestState.aguardando,
+                    offstage:
+                        controller.statusRequisicao != RequestState.finalizado,
+                    child: controller.requisicao != null
+                        ? DialogValuesInfoTrip(
+                            request: controller.requisicao!,
+                          )
+                        : Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              width: MediaQuery.sizeOf(context).width * .70,
+                              height: MediaQuery.of(context).size.height * 0.30,
+                              decoration: BoxDecoration(
+                                  color: Colors.white.withAlpha(220),
+                                  borderRadius: BorderRadius.circular(32)),
+                              child: Column(
+                                spacing: 30,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                   Text(
+                                    "Algo deu errado,dados da viagem não disponivel",
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodyLarge?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 15,
+                                    )),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red
+                                      ),
+                                      onPressed: (){
+                                      controller.reportError();
+                                    }, child: const Text("Reportar Erro",
+                                    style: TextStyle(color: Colors.white),
+                                    ))
+                                ],
+                                
+                              ),
+                            ),
+                          ),
+                  );
+                }),
+                Observer(builder: (context) {
+                  return Offstage(
+                      offstage: controller.statusRequisicao !=
+                          RequestState.aguardando,
                       child: DialogFindDriver(onPressed: () {
                         controller.cancelarUber();
                       }));
@@ -324,7 +356,6 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
                         statusRequisicao: controller.statusRequisicao),
                   );
                 }),
-                
               ],
             ),
           ),

@@ -20,7 +20,7 @@ abstract class HomePassageiroControllerBase with Store {
   final ILocationService _locationService;
   final MapsCameraService _mapsCameraService;
   final ITripSerivce _tripService;
-  final INotificationService _notificationService;
+
   final FirebaseNotfication _firebaseNotificationService;
   final IPaymentService _paymentService;
 
@@ -30,7 +30,6 @@ abstract class HomePassageiroControllerBase with Store {
   final controller = Completer<GoogleMapController>();
 
   HomePassageiroControllerBase({
-    required INotificationService notificationService,
     required IAuthService authService,
     required IAddresService addressService,
     required IRequistionService requestService,
@@ -47,7 +46,7 @@ abstract class HomePassageiroControllerBase with Store {
         _locationService = locattionService,
         _mapsCameraService = cameraService,
         _tripService = tripService,
-        _notificationService = notificationService,
+
         _firebaseNotificationService = firebaseNotificationService,
         _paymentService = paymentService;
 
@@ -88,6 +87,7 @@ abstract class HomePassageiroControllerBase with Store {
 
   @readonly
   Function? _functionPadrao;
+   
 
   @computed
   bool get isAddressNotNullOrEmpty {
@@ -126,7 +126,7 @@ abstract class HomePassageiroControllerBase with Store {
       _addresList = <Address>[];
     }
   }
-
+   
   @action
   Future<void> _getCameraUserLocationPosition() async {
     //Usado para quando nao tiver permissão de localização
@@ -150,7 +150,7 @@ abstract class HomePassageiroControllerBase with Store {
       await setNameMyLocal(address, 'destination1.png');
     }
   }
-
+   
   Future<void> getDataUSerOn() async {
     _errorMensager = null;
     _usuario = null;
@@ -302,7 +302,7 @@ abstract class HomePassageiroControllerBase with Store {
     if (!isAddressNotNullOrEmpty) {
       _cameraPosition = CameraPosition(
         target: LatLng(position.latitude, position.longitude),
-        zoom: 16,
+        zoom: 17,
       );
 
       if (_cameraPosition != null) {
@@ -311,7 +311,7 @@ abstract class HomePassageiroControllerBase with Store {
       return;
     }
     _mapsCameraService.moverCameraBound(
-        _myAddres!, _myDestination!, 60, controller);
+        _myAddres!, _myDestination!, 80, controller);
     await _traceRouter();
   }
 
@@ -518,7 +518,7 @@ abstract class HomePassageiroControllerBase with Store {
   }
 
   Future<void> paymentConfirmed(Requisicao request) async {
-    _myAddres = null;
+     _myAddres = null;
     _addresList = List.empty();
     _exibirCaixasDeRotas = true;
     _functionPadrao = null;
@@ -526,22 +526,30 @@ abstract class HomePassageiroControllerBase with Store {
     _myDestination = null;
     _polynesRouter = {};
     _tripSelected = null;
-    _requisitionSerivce.deleteAcvitedRequest(request);
-    _statusRequisicao = RequestState.nao_chamado;
+    _addresList = List.empty();
     _requisicao = null;
+     print("STATUS  ${request.status}");
+    _statusRequisicao = RequestState.pagamento_confirmado;
+    ServiceNotificationImpl().showNotification(
+      title: "Pagamento Confirmado", 
+      body: "Obrigado pela viagem com ${request.motorista?.nome},avalie o motorista"
+      );
+      _requisitionSerivce.deleteAcvitedRequest(request);
+    
   }
 
   Future<void> finishRequest(Requisicao request) async {
     _textoBotaoPadrao = "";
     _statusRequisicao = RequestState.finalizado;
-    _requisicao = request;
+    print("STATUS finishRequest ${request.status}");
+   
     _exibirCaixasDeRotas = false;
   }
 
   Future<void> inTravel(Requisicao request) async {
     _textoBotaoPadrao = "";
     _statusRequisicao = RequestState.em_viagem;
-    _requisicao = request;
+    print("STATUS inTravel ${request.status}");
     _exibirCaixasDeRotas = false;
 
     final Usuario(latitude: myLatitude, longitude: myLongitude, :nome) =
@@ -557,8 +565,10 @@ abstract class HomePassageiroControllerBase with Store {
 
   Future<void> statusUberNaoChamdo() async {
     _polynesRouter = {};
+    _requisicao = null;
     _textoBotaoPadrao = "Procurar Motorista";
     _statusRequisicao = RequestState.nao_chamado;
+    
     _exibirCaixasDeRotas = true;
     await _getUserLocation();
   }
@@ -566,8 +576,8 @@ abstract class HomePassageiroControllerBase with Store {
   Future<void> statusUberAguardando(Requisicao request) async {
     _textoBotaoPadrao = "Cancelar";
     _statusRequisicao = RequestState.aguardando;
-    
     _exibirCaixasDeRotas = false;
+    print("STATUS  ${request.status}");
     getActiveTripData(request);
   }
   Future<void> deslogar() async {
@@ -581,27 +591,7 @@ abstract class HomePassageiroControllerBase with Store {
     }
   }
 
-  Future<void> listenMessage() async {
-    notificatioSubscription = _firebaseNotificationService
-        .getNotificationFistPlane()
-        .listen((UberMessanger message) {
-      final body = message.body;
-      final title = message.title;
-      final url = message.imgUrl;
-
-      debugPrint("MESSAGE FIREBASE ARGS: ${message.data}");
-
-      if (body != null && title != null) {
-        debugPrint("MESSAGE FIREBASE: ${message.title} ");
-        _notificationService.showNotification(
-          title: title,
-          body: body,
-          indeterminate: true,
-          showProgress: true,
-        );
-      }
-    });
-  }
+ 
 
   Future<void> getMessgeBackGround() async {
     _firebaseNotificationService.getNotificationFinishedApp();
@@ -617,13 +607,27 @@ abstract class HomePassageiroControllerBase with Store {
         .findAndObserverById(_requisicao!)
         .listen((dataActualRequest) async {
       await statusVeifyRequest(dataActualRequest);
-
       if (dataActualRequest.status != _requisicao?.status) {
         await _requisitionSerivce.updataDataRequisition(dataActualRequest);
       }
     });
   }
+ 
+ Future<void>  reportError() async{
+     _requisicao = null;
+     _addresList.clear();
+     _myAddres = null;
+    _addresList = List.empty();
+    _exibirCaixasDeRotas = true;
+    _functionPadrao = null;
+    _markers = {};
+    _myDestination = null;
+    _polynesRouter = {};
+    _tripSelected = null;
+    _statusRequisicao = RequestState.pagamento_confirmado;
+   _requisitionSerivce.deleteAcvitedRequest(_requisicao!);
 
+ }   
   void dispose() {
     notificatioSubscription?.cancel();
     requestSubscription?.cancel();
@@ -645,7 +649,7 @@ abstract class HomePassageiroControllerBase with Store {
     final passageiroLocation = _myAddres?.copyWith(
         latitude: passageiroLatitude, longitude: passageirolongitude);
 
-    await setDestinationLocal(otherLocation, 'destination2.png');
-    await setNameMyLocal(passageiroLocation!, 'map_car.png');
+    await setDestinationLocal(otherLocation, 'map_car.png');
+    await setNameMyLocal(passageiroLocation!, 'destination1.png');
   }
 }
