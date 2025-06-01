@@ -460,6 +460,15 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
     return _$cancelarUberAsyncAction.run(() => super.cancelarUber());
   }
 
+  late final _$finishRequestAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.finishRequest',
+      context: context);
+
+  @override
+  Future<void> finishRequest(Requisicao request) {
+    return _$finishRequestAsyncAction.run(() => super.finishRequest(request));
+  }
+
   @override
   String toString() {
     return '''

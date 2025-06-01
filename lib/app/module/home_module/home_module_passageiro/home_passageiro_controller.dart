@@ -169,14 +169,17 @@ abstract class HomePassageiroControllerBase with Store {
         return;
       }
 
-      await verfyActivatedRequisition(_usuario!.idRequisicaoAtiva!);
+      await _verfyActivatedRequisition(_usuario!.idRequisicaoAtiva!);
     } on UserException catch (e) {
       _errorMensager = e.message;
       logout();
-    }
+    } on RequestNotFound{
+       _requisicao = Requisicao.empty();
+      _showErrorMessage("Escolha seu destino para iniciar a viagem");
+    } 
   }
 
-  Future<void> verfyActivatedRequisition(String idRequisicao) async {
+  Future<void> _verfyActivatedRequisition(String idRequisicao) async {
     try {
       final requisicao =
           await _requisitionSerivce.verfyActivatedRequisition(idRequisicao);
@@ -184,8 +187,7 @@ abstract class HomePassageiroControllerBase with Store {
       // initListener();
       return;
     } on RequestNotFound {
-      _requisicao = Requisicao.empty();
-      _showErrorMessage("Escolha seu destino para iniciar a viagem");
+      rethrow;
     }
   }
 
@@ -408,12 +410,13 @@ abstract class HomePassageiroControllerBase with Store {
         passageiro: _usuario!,
         status: RequestState.aguardando,
         valorCorrida: _tripSelected!.price,
+        requestDate: DateTime.now()
       );
       requisicao;
       final requestId = await _requisitionSerivce.createRequisition(requisicao);
 
       final userUpadated = _usuario!.copyWith(
-        idRequisicaoAtiva: requestId,
+        idRequisicaoAtiva: () => requestId,
         latitude: myLatitude,
         longitude: myLongitude,
       );
@@ -424,13 +427,15 @@ abstract class HomePassageiroControllerBase with Store {
       await _userService.updateUser(userUpadated);
       _usuario = userUpadated;
 
-      final requestUpdated =
-          await _requisitionSerivce.updataDataRequisition(completedUpdate);
-     await verfyActivatedRequisition(requestId);
+      await _requisitionSerivce.updataDataRequisition(completedUpdate);
+     await _verfyActivatedRequisition(requestId);
       
     } on RequestException catch (e, s) {
       _showErrorMessage(e.message, error: e, stackTrace: s);
-    } on AddresException catch (e, s) {
+    }on RequestNotFound catch (e, s) {
+      _showErrorMessage("Erro ao criar requisição", error: e, stackTrace: s);
+    } 
+    on AddresException catch (e, s) {
       _showErrorMessage(e.message, error: e, stackTrace: s);
     }
   }
@@ -511,13 +516,13 @@ abstract class HomePassageiroControllerBase with Store {
       RequestState.a_caminho => _stateUberOnWay(request),
       RequestState.em_viagem => inTravel(request),
       RequestState.finalizado => finishRequest(request),
-      RequestState.pagamento_confirmado => paymentConfirmed(request),
+      RequestState.pagamento_confirmado => _paymentConfirmed(request),
       RequestState.cancelado => statusUberNaoChamdo(),
       _ => statusUberNaoChamdo()
     };
   }
 
-  Future<void> paymentConfirmed(Requisicao request) async {
+  Future<void> _paymentConfirmed(Requisicao request) async {
      _myAddres = null;
     _addresList = List.empty();
     _exibirCaixasDeRotas = true;
@@ -528,28 +533,27 @@ abstract class HomePassageiroControllerBase with Store {
     _tripSelected = null;
     _addresList = List.empty();
     _requisicao = null;
-     print("STATUS  ${request.status}");
+    
     _statusRequisicao = RequestState.pagamento_confirmado;
+
     ServiceNotificationImpl().showNotification(
       title: "Pagamento Confirmado", 
       body: "Obrigado pela viagem com ${request.motorista?.nome},avalie o motorista"
       );
+      
       _requisitionSerivce.deleteAcvitedRequest(request);
-    
   }
 
+   @action
   Future<void> finishRequest(Requisicao request) async {
     _textoBotaoPadrao = "";
     _statusRequisicao = RequestState.finalizado;
-    print("STATUS finishRequest ${request.status}");
-   
     _exibirCaixasDeRotas = false;
   }
 
   Future<void> inTravel(Requisicao request) async {
     _textoBotaoPadrao = "";
     _statusRequisicao = RequestState.em_viagem;
-    print("STATUS inTravel ${request.status}");
     _exibirCaixasDeRotas = false;
 
     final Usuario(latitude: myLatitude, longitude: myLongitude, :nome) =
