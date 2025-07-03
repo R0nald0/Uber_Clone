@@ -56,13 +56,15 @@ class HomePassageiroPageState extends State<HomePassageiroPage>
 
     final requicaoReaction = reaction<Requisicao?>(
         (_) => homePassageiroController.requisicao, (requisicao) async {
-      hideLoader();
+       hideLoader();
       if (requisicao == null ||
           requisicao.id == null ||
           requisicao.status == RequestState.pagamento_confirmado) {
         homePassageiroController.statusUberNaoChamdo();
       } else {
+        showLoaderDialog();
         await widget.homePassageiroController.observerRequestState();
+        hideLoader();
       }
     });
 

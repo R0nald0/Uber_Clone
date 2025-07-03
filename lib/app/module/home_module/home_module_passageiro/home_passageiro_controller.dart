@@ -46,7 +46,6 @@ abstract class HomePassageiroControllerBase with Store {
         _locationService = locattionService,
         _mapsCameraService = cameraService,
         _tripService = tripService,
-
         _firebaseNotificationService = firebaseNotificationService,
         _paymentService = paymentService;
 
@@ -87,7 +86,6 @@ abstract class HomePassageiroControllerBase with Store {
 
   @readonly
   Function? _functionPadrao;
-   
 
   @computed
   bool get isAddressNotNullOrEmpty {
@@ -126,7 +124,7 @@ abstract class HomePassageiroControllerBase with Store {
       _addresList = <Address>[];
     }
   }
-   
+
   @action
   Future<void> _getCameraUserLocationPosition() async {
     //Usado para quando nao tiver permissão de localização
@@ -150,7 +148,7 @@ abstract class HomePassageiroControllerBase with Store {
       await setNameMyLocal(address, 'destination1.png');
     }
   }
-   
+
   Future<void> getDataUSerOn() async {
     _errorMensager = null;
     _usuario = null;
@@ -173,10 +171,10 @@ abstract class HomePassageiroControllerBase with Store {
     } on UserException catch (e) {
       _errorMensager = e.message;
       logout();
-    } on RequestNotFound{
-       _requisicao = Requisicao.empty();
+    } on RequestNotFound {
+      _requisicao = Requisicao.empty();
       _showErrorMessage("Escolha seu destino para iniciar a viagem");
-    } 
+    }
   }
 
   Future<void> _verfyActivatedRequisition(String idRequisicao) async {
@@ -403,40 +401,56 @@ abstract class HomePassageiroControllerBase with Store {
               destinationLatitude, destinationLongitude);
 
       final requisicao = Requisicao(
-        paymentType: _payments.firstWhere((p) => p.id == idPaymentType),
-        id: null,
-        destino: destinationAddress,
-        motorista: null,
-        passageiro: _usuario!,
-        status: RequestState.aguardando,
-        valorCorrida: _tripSelected!.price,
-        requestDate: DateTime.now()
-      );
+          paymentType: _payments.firstWhere((p) => p.id == idPaymentType),
+          id: null,
+          destino: destinationAddress,
+          motorista: null,
+          passageiro: _usuario!,
+          status: RequestState.aguardando,
+          valorCorrida: _tripSelected!.price,
+          requestDate: DateTime.now());
       requisicao;
-      final requestId = await _requisitionSerivce.createRequisition(requisicao);
+        final requestId =
+            await _requisitionSerivce.createRequisition(requisicao);
 
-      final userUpadated = _usuario!.copyWith(
-        idRequisicaoAtiva: () => requestId,
-        latitude: myLatitude,
-        longitude: myLongitude,
-      );
+        
+        final userUpadated = _usuario!.copyWith(
+          idRequisicaoAtiva: () => requestId,
+          latitude: myLatitude,
+          longitude: myLongitude,
+        );
 
-      final completedUpdate =
-          requisicao.copyWith(id: () => requestId, passageiro: userUpadated);
+        final completedUpdate =
+            requisicao.copyWith(id: () => requestId, passageiro: userUpadated);
 
-      await _userService.updateUser(userUpadated);
-      _usuario = userUpadated;
+        await _userService.updateUser(userUpadated);
+        _usuario = userUpadated;
 
-      await _requisitionSerivce.updataDataRequisition(completedUpdate);
-     await _verfyActivatedRequisition(requestId);
+        await _requisitionSerivce.updataDataRequisition(completedUpdate);
+        await _verfyActivatedRequisition(requestId);
+
+        final Requisicao(:valorCorrida, :paymentType) = requisicao;
+
+        if (TypesPayment.findByName(paymentType.type) == TypesPayment.CREDIT_CARD) {
+          final amount = double.tryParse(valorCorrida.changeCommaToDot());  
+          await _paymentService.creatIntentPayment(amount, paymentType);
+           ServiceNotificationImpl().showNotification(
+          title: "Pagamento Realizado", 
+          body: "Fizemo uma pré compra no valor de $valorCorrida no seu cartão de credito",
+          ); 
+        }
+        
       
     } on RequestException catch (e, s) {
       _showErrorMessage(e.message, error: e, stackTrace: s);
-    }on RequestNotFound catch (e, s) {
+    } on RequestNotFound catch (e, s) {
       _showErrorMessage("Erro ao criar requisição", error: e, stackTrace: s);
-    } 
-    on AddresException catch (e, s) {
+    } on AddresException catch (e, s) {
       _showErrorMessage(e.message, error: e, stackTrace: s);
+    } on PaymentException catch (e) {
+        _requisitionSerivce.cancelRequisition(_requisicao!);
+      log("Erro ao confirmar pagamento", error: e);
+      _showErrorMessage("Erro ao confirmar pagamento");
     }
   }
 
@@ -453,7 +467,7 @@ abstract class HomePassageiroControllerBase with Store {
       _tripSelected = null;
       _myDestination = null;
       _polynesRouter.clear();
-    
+
       requestSubscription?.cancel();
       _requisicao = null;
     }
@@ -523,7 +537,7 @@ abstract class HomePassageiroControllerBase with Store {
   }
 
   Future<void> _paymentConfirmed(Requisicao request) async {
-     _myAddres = null;
+    _myAddres = null;
     _addresList = List.empty();
     _exibirCaixasDeRotas = true;
     _functionPadrao = null;
@@ -533,18 +547,18 @@ abstract class HomePassageiroControllerBase with Store {
     _tripSelected = null;
     _addresList = List.empty();
     _requisicao = null;
-    
+
     _statusRequisicao = RequestState.pagamento_confirmado;
 
     ServiceNotificationImpl().showNotification(
-      title: "Pagamento Confirmado", 
-      body: "Obrigado pela viagem com ${request.motorista?.nome},avalie o motorista"
-      );
-      
-      _requisitionSerivce.deleteAcvitedRequest(request);
+        title: "Pagamento Confirmado",
+        body:
+            "Obrigado pela viagem com ${request.motorista?.nome},avalie o motorista");
+
+    _requisitionSerivce.deleteAcvitedRequest(request);
   }
 
-   @action
+  @action
   Future<void> finishRequest(Requisicao request) async {
     _textoBotaoPadrao = "";
     _statusRequisicao = RequestState.finalizado;
@@ -572,7 +586,7 @@ abstract class HomePassageiroControllerBase with Store {
     _requisicao = null;
     _textoBotaoPadrao = "Procurar Motorista";
     _statusRequisicao = RequestState.nao_chamado;
-    
+
     _exibirCaixasDeRotas = true;
     await _getUserLocation();
   }
@@ -581,9 +595,10 @@ abstract class HomePassageiroControllerBase with Store {
     _textoBotaoPadrao = "Cancelar";
     _statusRequisicao = RequestState.aguardando;
     _exibirCaixasDeRotas = false;
-    print("STATUS  ${request.status}");
+
     getActiveTripData(request);
   }
+
   Future<void> deslogar() async {
     try {
       final isLogout = await _authService.logout();
@@ -595,15 +610,13 @@ abstract class HomePassageiroControllerBase with Store {
     }
   }
 
- 
-
   Future<void> getMessgeBackGround() async {
     _firebaseNotificationService.getNotificationFinishedApp();
   }
 
   Future<void> observerRequestState() async {
     if (_requisicao == null || _requisicao?.id == null) {
-        statusUberNaoChamdo();
+      statusUberNaoChamdo();
       return;
     }
     requestSubscription?.cancel();
@@ -616,11 +629,11 @@ abstract class HomePassageiroControllerBase with Store {
       }
     });
   }
- 
- Future<void>  reportError() async{
-     _requisicao = null;
-     _addresList.clear();
-     _myAddres = null;
+
+  Future<void> reportError() async {
+    _requisicao = null;
+    _addresList.clear();
+    _myAddres = null;
     _addresList = List.empty();
     _exibirCaixasDeRotas = true;
     _functionPadrao = null;
@@ -629,9 +642,9 @@ abstract class HomePassageiroControllerBase with Store {
     _polynesRouter = {};
     _tripSelected = null;
     _statusRequisicao = RequestState.pagamento_confirmado;
-   _requisitionSerivce.deleteAcvitedRequest(_requisicao!);
+    _requisitionSerivce.deleteAcvitedRequest(_requisicao!);
+  }
 
- }   
   void dispose() {
     notificatioSubscription?.cancel();
     requestSubscription?.cancel();
@@ -639,8 +652,8 @@ abstract class HomePassageiroControllerBase with Store {
 
   Future<void> _stateUberOnWay(Requisicao request) async {
     _statusRequisicao = RequestState.a_caminho;
-      _exibirCaixasDeRotas = false;
-      _textoBotaoPadrao = "Cancelar";
+    _exibirCaixasDeRotas = false;
+    _textoBotaoPadrao = "Cancelar";
 
     final Usuario(:latitude, :longitude, :nome) = request.motorista!;
     final Usuario(
