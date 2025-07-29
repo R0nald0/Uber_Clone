@@ -22,8 +22,12 @@
  * criação de perfil
 
 Aplicativo desenvolvido ultilizando 
- - Flutter Modular ,gerenciamento de rotas e  navegação,Injecão de dependência.(Futuramente será trocado para o Flutter Get_It)
- - Firebase Firestore - gravações de dados dos usuários e das viagens. 
+ - Injecão de dependência com o Flutter Get_It
+ - Consumo de api com DIO,
+ - Serviço de pagamento com <a href="https://stripe.com/br">Stripe</a>
+ - API Local consumindo serviço da <a href="https://groq.com/">GROQ</a> para Ia.
+ - Firebase Firestore - gravações de dados dos usuários e das viagens.
+ - Firebase Messaging - Alertas e atualizações para o usuário quando ele mais precisa.
  - Firebase Auth -   autenticação dos usuário,verificação do estado do usuáio(online/offline)
  - Firebase Storage - persistiência de imagens para perfis
  - Google Maps -  exibição de marcadores de posição,exibição e controle do mapa
@@ -31,6 +35,10 @@ Aplicativo desenvolvido ultilizando
  - Places - exbição de nomes de lugares no app
  - Persistência de dados offline com shared_preferences e local Storage
  - Gerenciamento de estado e reatividade com o Mobx
+ - Testes Unitário com Mocktail
+
+#### Modulo de negócio <a href="https://github.com/R0nald0/uber_clone_core">uber_clone_core</a>
+
 
 ![Firebase](https://img.shields.io/badge/firebase-a08021?style=for-the-badge&logo=firebase&logoColor=ffcd34)
 ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white)
