@@ -50,6 +50,12 @@ abstract class HomePassageiroControllerBase with Store {
         _paymentService = paymentService;
 
   @readonly
+  String? _messageIa;
+
+  @readonly 
+  bool? _loading;
+
+  @readonly
   var _addresList = <Address>[];
 
   @readonly
@@ -152,6 +158,7 @@ abstract class HomePassageiroControllerBase with Store {
   Future<void> getDataUSerOn() async {
     _errorMensager = null;
     _usuario = null;
+    _loading = true;
     try {
       final idCurrentUser = await _authService.verifyStateUserLogged();
       if (idCurrentUser == null) {
@@ -174,6 +181,8 @@ abstract class HomePassageiroControllerBase with Store {
     } on RequestNotFound {
       _requisicao = Requisicao.empty();
       _showErrorMessage("Escolha seu destino para iniciar a viagem");
+    }finally{
+      
     }
   }
 
@@ -190,6 +199,7 @@ abstract class HomePassageiroControllerBase with Store {
   }
 
   Future<void> getActiveTripData(Requisicao requisicao) async {
+  
     final Usuario(:latitude, :longitude) = requisicao.passageiro;
 
     final addressPassanger =
@@ -197,6 +207,7 @@ abstract class HomePassageiroControllerBase with Store {
 
     await setNameMyLocal(addressPassanger, 'destination1.png');
     await setDestinationLocal(requisicao.destino, 'destination2.png');
+    
   }
 
   Future<void> logout() async {
@@ -299,20 +310,23 @@ abstract class HomePassageiroControllerBase with Store {
   @action
   Future<void> _showAllPositionsAndTraceRouter(
       ({double latitude, double longitude}) position) async {
+     
     if (!isAddressNotNullOrEmpty) {
       _cameraPosition = CameraPosition(
         target: LatLng(position.latitude, position.longitude),
-        zoom: 17,
+        zoom: 18,
       );
 
       if (_cameraPosition != null) {
         await _mapsCameraService.moveCamera(_cameraPosition!, controller);
       }
+      _loading = null;
       return;
     }
     _mapsCameraService.moverCameraBound(
         _myAddres!, _myDestination!, 80, controller);
     await _traceRouter();
+    _loading = null;
   }
 
   @action
@@ -333,8 +347,18 @@ abstract class HomePassageiroControllerBase with Store {
     }
   }
 
+  Future<void> getDestinatinationLocalByiaSugestion(String localName) async {
+    try {
+      final address = await findAddresByName(localName);
+      await setDestinationLocal(address.first, 'destination2.png');
+    } on AddresException catch (e) {
+       _showErrorMessage(e.message);
+    }
+  }
+
   @action
   Future<void> _traceRouter() async {
+     
     _polynesRouter = <Polyline>{};
 
     if (isAddressNotNullOrEmpty) {
@@ -379,6 +403,7 @@ abstract class HomePassageiroControllerBase with Store {
 
   @action
   Future<void> createRequisitionToRide(int idPaymentType) async {
+
     if (_tripSelected == null ||
         _myAddres == null ||
         _myDestination == null ||
@@ -396,6 +421,7 @@ abstract class HomePassageiroControllerBase with Store {
     ) = _myDestination!;
 
     try {
+      _loading = true;
       final destinationAddress =
           await _locationService.findDataLocationFromLatLong(
               destinationLatitude, destinationLongitude);
@@ -410,37 +436,34 @@ abstract class HomePassageiroControllerBase with Store {
           valorCorrida: _tripSelected!.price,
           requestDate: DateTime.now());
       requisicao;
-        final requestId =
-            await _requisitionSerivce.createRequisition(requisicao);
+      final requestId = await _requisitionSerivce.createRequisition(requisicao);
 
-        
-        final userUpadated = _usuario!.copyWith(
-          idRequisicaoAtiva: () => requestId,
-          latitude: myLatitude,
-          longitude: myLongitude,
+      final userUpadated = _usuario!.copyWith(
+        idRequisicaoAtiva: () => requestId,
+        latitude: myLatitude,
+        longitude: myLongitude,
+      );
+
+      final completedUpdate =
+          requisicao.copyWith(id: () => requestId, passageiro: userUpadated);
+
+      await _userService.updateUser(userUpadated);
+      _usuario = userUpadated;
+
+      await _requisitionSerivce.updataDataRequisition(completedUpdate);
+      await _verfyActivatedRequisition(requestId);
+
+      final Requisicao(:valorCorrida, :paymentType) = requisicao;
+      if (TypesPayment.findByName(paymentType.type) ==
+          TypesPayment.CREDIT_CARD) {
+        final amount = double.tryParse(valorCorrida.changeCommaToDot());
+        await _paymentService.creatIntentPayment(amount, paymentType);
+        ServiceNotificationImpl().showNotification(
+          title: "Pagamento Realizado",
+          body:
+              "Fizemos uma pré compra no valor de $valorCorrida no seu cartão de credito",
         );
-
-        final completedUpdate =
-            requisicao.copyWith(id: () => requestId, passageiro: userUpadated);
-
-        await _userService.updateUser(userUpadated);
-        _usuario = userUpadated;
-
-        await _requisitionSerivce.updataDataRequisition(completedUpdate);
-        await _verfyActivatedRequisition(requestId);
-
-        final Requisicao(:valorCorrida, :paymentType) = requisicao;
-
-        if (TypesPayment.findByName(paymentType.type) == TypesPayment.CREDIT_CARD) {
-          final amount = double.tryParse(valorCorrida.changeCommaToDot());  
-          await _paymentService.creatIntentPayment(amount, paymentType);
-           ServiceNotificationImpl().showNotification(
-          title: "Pagamento Realizado", 
-          body: "Fizemo uma pré compra no valor de $valorCorrida no seu cartão de credito",
-          ); 
-        }
-        
-      
+      }
     } on RequestException catch (e, s) {
       _showErrorMessage(e.message, error: e, stackTrace: s);
     } on RequestNotFound catch (e, s) {
@@ -448,9 +471,11 @@ abstract class HomePassageiroControllerBase with Store {
     } on AddresException catch (e, s) {
       _showErrorMessage(e.message, error: e, stackTrace: s);
     } on PaymentException catch (e) {
-        _requisitionSerivce.cancelRequisition(_requisicao!);
+      _requisitionSerivce.cancelRequisition(_requisicao!);
       log("Erro ao confirmar pagamento", error: e);
       _showErrorMessage("Erro ao confirmar pagamento");
+    }finally{
+      _loading = true;
     }
   }
 
@@ -592,6 +617,8 @@ abstract class HomePassageiroControllerBase with Store {
   }
 
   Future<void> statusUberAguardando(Requisicao request) async {
+  
+     closeIaMessage();
     _textoBotaoPadrao = "Cancelar";
     _statusRequisicao = RequestState.aguardando;
     _exibirCaixasDeRotas = false;
@@ -615,9 +642,12 @@ abstract class HomePassageiroControllerBase with Store {
   }
 
   Future<void> observerRequestState() async {
+    _loading = true;
     if (_requisicao == null || _requisicao?.id == null) {
       statusUberNaoChamdo();
+      _loading = null;
       return;
+      
     }
     requestSubscription?.cancel();
     requestSubscription = _requisitionSerivce
@@ -627,6 +657,7 @@ abstract class HomePassageiroControllerBase with Store {
       if (dataActualRequest.status != _requisicao?.status) {
         await _requisitionSerivce.updataDataRequisition(dataActualRequest);
       }
+      _loading = null;
     });
   }
 
@@ -669,4 +700,13 @@ abstract class HomePassageiroControllerBase with Store {
     await setDestinationLocal(otherLocation, 'map_car.png');
     await setNameMyLocal(passageiroLocation!, 'destination1.png');
   }
+
+  Future<void> getMessageIa() async {
+    await Future.delayed(const Duration(seconds: 1));
+    _messageIa = "O que você está planejando para hoje?";
+    await Future.delayed(const Duration(seconds: 4));
+  }
+
+  @action
+  Future<void> closeIaMessage() async => _messageIa = null;
 }

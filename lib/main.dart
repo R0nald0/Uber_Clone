@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:uber/app/main_widget.dart';
@@ -9,7 +7,6 @@ void main() async {
 
   await AppConfigInitialization().loadConfig(); 
   const pubKey = String.fromEnvironment("PUBLISHED_KEY");
-  log("CHAVE PUBLICA $pubKey");
   Stripe.publishableKey = pubKey;  
   runApp(const MainWidget());
   }

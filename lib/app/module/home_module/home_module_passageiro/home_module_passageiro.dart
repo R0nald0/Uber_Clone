@@ -1,4 +1,5 @@
 import 'package:flutter_getit/flutter_getit.dart';
+import 'package:uber/app/module/chat_module/chat_module.dart';
 import 'package:uber/app/module/core/authentication_controller.dart';
 import 'package:uber/app/module/home_module/home_module_passageiro/home_page_passageiro.dart';
 import 'package:uber/app/module/home_module/home_module_passageiro/home_passageiro_controller.dart';
@@ -14,25 +15,26 @@ class HomeModulePassageiro extends FlutterGetItModuleRouter {
           ],
           pages: [
             FlutterGetItPageRouter(
-                name: "/PassageiroPage",
-                builder: (context) => HomePassageiroPage(
-                    homePassageiroController:
-                        context.get<HomePassageiroController>()),
-                bindings: [
-                  Bind.lazySingleton<HomePassageiroController>(
-                    (i) => HomePassageiroController(
-                        paymentService: i(),
-                        firebaseNotificationService: i(),
-                        addressService: i(),
-                        authService: i(),
-                        userService: i(),
-                        locattionService: i(),
-                        cameraService: i(),
-                        tripService: i(), 
-                        requestService: i()
-                        ),
-                  )
-                ]),
+              name: "/PassageiroPage",
+              builder: (context) => HomePassageiroPage(
+                  homePassageiroController:
+                      context.get<HomePassageiroController>()),
+              bindings: [
+                Bind.lazySingleton<HomePassageiroController>(
+                  (i) => HomePassageiroController(
+                      paymentService: i(),
+                      firebaseNotificationService: i(),
+                      addressService: i(),
+                      authService: i(),
+                      userService: i(),
+                      locattionService: i(),
+                      cameraService: i(),
+                      tripService: i(),
+                      requestService: i()),
+                )
+              ],
+            ),
+            ChatModule()
           ],
         );
 }

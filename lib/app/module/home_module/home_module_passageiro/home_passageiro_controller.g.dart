@@ -17,6 +17,42 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
               name: 'HomePassageiroControllerBase.isAddressNotNullOrEmpty'))
       .value;
 
+  late final _$_messageIaAtom =
+      Atom(name: 'HomePassageiroControllerBase._messageIa', context: context);
+
+  String? get messageIa {
+    _$_messageIaAtom.reportRead();
+    return super._messageIa;
+  }
+
+  @override
+  String? get _messageIa => messageIa;
+
+  @override
+  set _messageIa(String? value) {
+    _$_messageIaAtom.reportWrite(value, super._messageIa, () {
+      super._messageIa = value;
+    });
+  }
+
+  late final _$_loadingAtom =
+      Atom(name: 'HomePassageiroControllerBase._loading', context: context);
+
+  bool? get loading {
+    _$_loadingAtom.reportRead();
+    return super._loading;
+  }
+
+  @override
+  bool? get _loading => loading;
+
+  @override
+  set _loading(bool? value) {
+    _$_loadingAtom.reportWrite(value, super._loading, () {
+      super._loading = value;
+    });
+  }
+
   late final _$_addresListAtom =
       Atom(name: 'HomePassageiroControllerBase._addresList', context: context);
 
@@ -467,6 +503,15 @@ mixin _$HomePassageiroController on HomePassageiroControllerBase, Store {
   @override
   Future<void> finishRequest(Requisicao request) {
     return _$finishRequestAsyncAction.run(() => super.finishRequest(request));
+  }
+
+  late final _$closeIaMessageAsyncAction = AsyncAction(
+      'HomePassageiroControllerBase.closeIaMessage',
+      context: context);
+
+  @override
+  Future<void> closeIaMessage() {
+    return _$closeIaMessageAsyncAction.run(() => super.closeIaMessage());
   }
 
   @override
