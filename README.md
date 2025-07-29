@@ -35,7 +35,6 @@ Aplicativo desenvolvido ultilizando
  - Places - exbição de nomes de lugares no app
  - Persistência de dados offline com shared_preferences e local Storage
  - Gerenciamento de estado e reatividade com o Mobx
- - Testes Unitário com Mocktail
 
 #### Modulo de negócio <a href="https://github.com/R0nald0/uber_clone_core">uber_clone_core</a>
 
