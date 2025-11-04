@@ -24,6 +24,24 @@
  * realizar viagens.
  * criação de perfil
 
+ ## 🔧 Instalação e Execução
+
+1. Clone o repositório:
+   ```bash
+   https://github.com/R0nald0/Uber_Clone
+   ```
+2. Acesse o diretório do projeto:
+   ```bash
+   cd chat-videos-app```
+
+3. Instale as dependências:
+   ```bash
+    flutter pub get```
+
+4. Execute o projeto
+   ```bash
+    flutter run```
+  
 Aplicativo desenvolvido ultilizando 
  - Flutter Modular para gerenciamento de rotas e  navegação,Injecão de dependência.(Futuramente será trocado pelo Flutter Get_It)
  - Firebase Firestore - para gravações de dados dos usuários e das viagens. 
