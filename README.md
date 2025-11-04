@@ -30,15 +30,12 @@
    ```bash
    https://github.com/R0nald0/Uber_Clone
    ```
-2. Acesse o diretório do projeto:
-   ```bash
-   cd chat-videos-app```
 
-3. Instale as dependências:
+2. Instale as dependências:
    ```bash
     flutter pub get```
 
-4. Execute o projeto
+3. Execute o projeto
    ```bash
     flutter run```
   
